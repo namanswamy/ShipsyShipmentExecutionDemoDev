@@ -1,0 +1,26 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
+  background: #F1EEE7;
+  color: #333;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+input, select, button, textarea { font-family: inherit; }
