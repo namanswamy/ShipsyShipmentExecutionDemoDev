@@ -13,6 +13,7 @@ const STATUS_OPTS = [
   { v: 'Not Started', bg: '#F4F4F4', c: '#555' },
   { v: 'In Progress', bg: '#FFFED2', c: '#8B7000' },
   { v: 'Done', bg: '#D3FFEA', c: '#0F6E3C' },
+  { v: 'Sent for Approval', bg: '#E3F2FD', c: '#1565C0' },
   { v: 'Cancelled', bg: '#FFD3D3', c: '#A00' },
 ];
 
@@ -111,7 +112,8 @@ const TasksListSequenced: React.FC<Props> = ({
 
   const currentActiveSeq = useMemo(() => {
     for (const t of allTasks) {
-      if (getStatus(t.taskKey) !== 'Done') return t.seq;
+      const st = getStatus(t.taskKey);
+      if (st !== 'Done' && st !== 'Sent for Approval') return t.seq;
     }
     return Infinity;
   }, [allTasks, statuses]);
@@ -232,8 +234,14 @@ const TasksListSequenced: React.FC<Props> = ({
             taskName={task.name}
             onClose={() => setOpenTaskKey(null)}
             onSendForApproval={() => {
-              setStatuses(prev => ({ ...prev, [openTaskKey]: 'Sent for Approval' }));
-              processTaskCompletion(openTaskKey, true);
+              setIsProcessing(true);
+              const key = openTaskKey!;
+              setOpenTaskKey(null);
+              setTimeout(() => {
+                setStatuses(prev => ({ ...prev, [key]: 'Sent for Approval' }));
+                setIsProcessing(false);
+                setToastMessage('Sent for Approval successfully');
+              }, 1000);
             }}
             savedDraft={incidentalDrafts[openTaskKey] || null}
             onSaveDraft={(draft) => {
