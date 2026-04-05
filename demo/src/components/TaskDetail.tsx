@@ -137,12 +137,28 @@ const FieldInput: React.FC<{ f: Field }> = ({ f }) => {
   return <input className="field-input" type={f.type === 'number' ? 'number' : 'text'} placeholder="Enter value" />;
 };
 
+const C_INCOTERMS = ['CIF', 'CFR', 'CPT', 'CIP'];
+const D_INCOTERMS = ['DAP', 'DPU', 'DDP'];
+
+const getVendorOptions = (allOpts: string[], incoterm: string) => {
+  if (C_INCOTERMS.includes(incoterm)) {
+    // Remove FF and Shipping Line
+    return allOpts.filter(o => o !== 'Freight Forwarder' && o !== 'Shipping Line');
+  }
+  if (D_INCOTERMS.includes(incoterm)) {
+    // Only Transporter and Surveyor
+    return allOpts.filter(o => o === 'Transporter' || o === 'Surveyor');
+  }
+  return allOpts;
+};
+
 interface Props {
   task: Task;
+  incoterm: string;
   onClose: () => void;
 }
 
-const TaskDetail: React.FC<Props> = ({ task, onClose }) => {
+const TaskDetail: React.FC<Props> = ({ task, incoterm, onClose }) => {
   const [markDone, setMarkDone] = useState(true);
   const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
   const allF = task.fields || [];
@@ -208,6 +224,7 @@ const TaskDetail: React.FC<Props> = ({ task, onClose }) => {
 
                   // Special rendering for Vendor Selection addmore field
                   if (isVendorSelectionTask && f.type === 'addmore') {
+                    const filteredField = { ...f, opts: getVendorOptions(f.opts || [], incoterm) };
                     return (
                       <div key={i} className="field-item full-width">
                         <div className="field-label">
@@ -220,7 +237,7 @@ const TaskDetail: React.FC<Props> = ({ task, onClose }) => {
                             </span>
                           )}
                         </div>
-                        <VendorAddMoreField f={f} onSelectionChange={setSelectedVendors} />
+                        <VendorAddMoreField f={filteredField} onSelectionChange={setSelectedVendors} />
                       </div>
                     );
                   }

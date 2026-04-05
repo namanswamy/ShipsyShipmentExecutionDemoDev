@@ -8,6 +8,7 @@ import ActionsPanel from './components/ActionsPanel';
 
 function App() {
   const [selectedShipmentId, setSelectedShipmentId] = useState<string>(shipments[0].id);
+  const selectedShipment = shipments.find(s => s.id === selectedShipmentId);
   const [activeMilestone, setActiveMilestone] = useState('ALL');
 
   return (
@@ -64,7 +65,7 @@ function App() {
           ))}
         </div>
         <div className="shipment-actions-panel">
-          <ActionsPanel selectedShipmentId={selectedShipmentId} />
+          <ActionsPanel selectedShipmentId={selectedShipmentId} incoterm={selectedShipment?.incoterm || ''} />
         </div>
       </div>
     </div>

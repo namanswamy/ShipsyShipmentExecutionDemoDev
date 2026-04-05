@@ -1,10 +1,27 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { tasks as allTasks, personas } from '../data/tasks';
 import TasksList from './TasksList';
 
 interface Props {
   selectedShipmentId: string | null;
+  incoterm: string;
 }
+
+const C_INCOTERMS = ['CIF', 'CFR', 'CPT', 'CIP'];
+const D_INCOTERMS = ['DAP', 'DPU', 'DDP'];
+
+const getVisiblePersonas = (incoterm: string) => {
+  if (C_INCOTERMS.includes(incoterm)) {
+    // Hide FF, keep Shipper, CHA, CFS, ICD, Transporter
+    return personas.filter(p => p.id !== 'FF');
+  }
+  if (D_INCOTERMS.includes(incoterm)) {
+    // Only Shipper and Transporter
+    return personas.filter(p => p.id === 'Shipper' || p.id === 'Transporter');
+  }
+  // All personas
+  return personas;
+};
 
 const actionTabs = [
   { key: 'tasks', label: 'Tasks' },
@@ -30,11 +47,28 @@ const MoreIcon = () => (
   </svg>
 );
 
-const ActionsPanel: React.FC<Props> = ({ selectedShipmentId }) => {
+const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm }) => {
   const [activeTab, setActiveTab] = useState('tasks');
   const [activePersona, setActivePersona] = useState('Shipper');
   const [showActivity, setShowActivity] = useState(false);
   const [showChat, setShowChat] = useState(false);
+
+  const visiblePersonas = useMemo(() => getVisiblePersonas(incoterm), [incoterm]);
+
+  // Reset everything when shipment changes
+  useEffect(() => {
+    setActivePersona('Shipper');
+    setActiveTab('tasks');
+    setShowActivity(false);
+    setShowChat(false);
+  }, [selectedShipmentId]);
+
+  // Reset to Shipper if current persona is hidden due to incoterm change
+  useEffect(() => {
+    if (!visiblePersonas.find(p => p.id === activePersona)) {
+      setActivePersona('Shipper');
+    }
+  }, [visiblePersonas, activePersona]);
 
   const personaTasks = useMemo(
     () => allTasks.filter(t => t.org === activePersona),
@@ -85,11 +119,11 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId }) => {
         </div>
       </div>
 
-      {/* Persona switcher - vendor type tabs */}
+      {/* Persona switcher - filtered by incoterm */}
       {activeTab === 'tasks' && (
         <div className="persona-bar">
           <span className="persona-label">Persona:</span>
-          {personas.map(p => (
+          {visiblePersonas.map(p => (
             <button
               key={p.id}
               className={`persona-tab ${activePersona === p.id ? 'active' : ''}`}
@@ -134,7 +168,7 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId }) => {
           Switch to <b>Tasks</b> tab to manage shipment tasks.
         </div>
       )}
-      {activeTab === 'tasks' && <TasksList tasks={personaTasks} />}
+      {activeTab === 'tasks' && <TasksList tasks={personaTasks} incoterm={incoterm} shipmentId={selectedShipmentId} />}
     </div>
   );
 };

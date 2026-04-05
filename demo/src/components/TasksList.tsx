@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Task } from '../data/tasks';
 import { milestones, STATUS_OPTS } from '../data/tasks';
 import TaskDetail from './TaskDetail';
@@ -23,14 +23,23 @@ const defaultStatuses: Record<number, string> = {
 
 interface Props {
   tasks: Task[];
+  incoterm: string;
+  shipmentId: string | null;
 }
 
-const TasksList: React.FC<Props> = ({ tasks: personaTasks }) => {
+const TasksList: React.FC<Props> = ({ tasks: personaTasks, incoterm, shipmentId }) => {
   const [openTaskId, setOpenTaskId] = useState<number | null>(null);
   const [statuses, setStatuses] = useState<Record<number, string>>(defaultStatuses);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
     'Origin': true, 'In Transit': true, 'Destination': true,
   });
+
+  // Reset to default view when shipment changes
+  useEffect(() => {
+    setOpenTaskId(null);
+    setStatuses(defaultStatuses);
+    setCollapsed({ 'Origin': true, 'In Transit': true, 'Destination': true });
+  }, [shipmentId]);
 
   const grouped = useMemo(() => {
     const g: Record<string, Task[]> = {};
@@ -42,7 +51,7 @@ const TasksList: React.FC<Props> = ({ tasks: personaTasks }) => {
 
   if (openTaskId) {
     const task = personaTasks.find(t => t.id === openTaskId);
-    if (task) return <TaskDetail task={task} onClose={() => setOpenTaskId(null)} />;
+    if (task) return <TaskDetail task={task} incoterm={incoterm} onClose={() => setOpenTaskId(null)} />;
   }
 
   return (
