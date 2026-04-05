@@ -3,6 +3,8 @@ import { personas } from '../data/tasks';
 import type { ShipmentMode } from '../data/taskSequence';
 import { resolveTasksForShipment } from '../data/taskSequence';
 import TasksListSequenced from './TasksListSequenced';
+import type { GPOResult } from './GPOTaskView';
+import type { IncidentalDraft } from './IncidentalChargesView';
 
 interface Props {
   selectedShipmentId: string | null;
@@ -42,6 +44,18 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
   const [selectedVendor, setSelectedVendor] = useState<'CFS' | 'ICD' | null>(null);
   const [visiblePersonaIds, setVisiblePersonaIds] = useState<string[]>(['Shipper']);
 
+  // Fix 4: Task-related state lifted from TasksListSequenced to persist across tab switches
+  const [statuses, setStatuses] = useState<Record<string, string>>({});
+  const [savedFields, setSavedFields] = useState<Record<string, Record<string, string>>>({});
+  const [vendorSelections, setVendorSelections] = useState<string[]>([]);
+  const [gpoResult, setGpoResult] = useState<GPOResult | null>(null);
+  const [portDetails, setPortDetails] = useState<{ pol: string; pod: string }>({ pol: '', pod: '' });
+  const [isSpot, setIsSpot] = useState(false);
+  const [incidentalDrafts, setIncidentalDrafts] = useState<Record<string, IncidentalDraft>>({});
+  const [openTaskKey, setOpenTaskKey] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [multiVendorSubmitted, setMultiVendorSubmitted] = useState<Record<string, Set<number>>>({});
+
   const mode = (shipmentMode === 'BB' || shipmentMode === 'BULK') ? shipmentMode as ShipmentMode
     : shipmentMode === 'Break Bulk' ? 'BB' as ShipmentMode
     : shipmentMode as ShipmentMode;
@@ -51,6 +65,15 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
     [mode, incoterm, selectedVendor]
   );
 
+  // Pre-populated statuses for DEMO-READY shipment
+  const getDemoReadyStatuses = (): Record<string, string> => {
+    const doneStatuses: Record<string, string> = {};
+    allResolvedTasks.forEach(t => {
+      if (t.seq <= 25) doneStatuses[t.taskKey] = 'Done';
+    });
+    return doneStatuses;
+  };
+
   // Reset everything when shipment changes
   useEffect(() => {
     setActivePersona('Shipper');
@@ -59,6 +82,25 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
     setShowChat(false);
     setSelectedVendor(null);
     setVisiblePersonaIds(['Shipper']);
+    setOpenTaskKey(null);
+    setCollapsed({});
+    setSavedFields({});
+    setIncidentalDrafts({});
+    setMultiVendorSubmitted({});
+
+    if (selectedShipmentId === 'DEMO-READY') {
+      setStatuses(getDemoReadyStatuses());
+      setVendorSelections(['Freight Forwarder', 'CHA', 'Transporter']);
+      setGpoResult(null);
+      setPortDetails({ pol: 'SHANGHAI', pod: 'NHAVA SHEVA' });
+      setIsSpot(false);
+    } else {
+      setStatuses({});
+      setVendorSelections([]);
+      setGpoResult(null);
+      setPortDetails({ pol: '', pod: '' });
+      setIsSpot(false);
+    }
   }, [selectedShipmentId]);
 
   // Reset to Shipper if current persona becomes hidden
@@ -165,9 +207,28 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
           activePersona={activePersona}
           incoterm={incoterm}
           shipmentMode={mode}
-          shipmentId={selectedShipmentId}
           onVendorSelected={setSelectedVendor}
           onVisiblePersonasChange={setVisiblePersonaIds}
+          statuses={statuses}
+          setStatuses={setStatuses}
+          savedFields={savedFields}
+          setSavedFields={setSavedFields}
+          vendorSelections={vendorSelections}
+          setVendorSelections={setVendorSelections}
+          gpoResult={gpoResult}
+          setGpoResult={setGpoResult}
+          portDetails={portDetails}
+          setPortDetails={setPortDetails}
+          isSpot={isSpot}
+          setIsSpot={setIsSpot}
+          incidentalDrafts={incidentalDrafts}
+          setIncidentalDrafts={setIncidentalDrafts}
+          openTaskKey={openTaskKey}
+          setOpenTaskKey={setOpenTaskKey}
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+          multiVendorSubmitted={multiVendorSubmitted}
+          setMultiVendorSubmitted={setMultiVendorSubmitted}
         />
       )}
     </div>

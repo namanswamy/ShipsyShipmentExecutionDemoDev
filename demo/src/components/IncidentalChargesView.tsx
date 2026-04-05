@@ -29,6 +29,7 @@ interface Props {
   onSendForApproval: () => void;
   savedDraft?: IncidentalDraft | null;
   onSaveDraft: (draft: IncidentalDraft) => void;
+  submitted?: boolean;
 }
 
 // ════════════════════════════════════════════════════
@@ -414,11 +415,11 @@ const ThirdPartyTable: React.FC<{
 // Main Component
 // ════════════════════════════════════════════════════
 
-const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForApproval, savedDraft, onSaveDraft }) => {
+const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForApproval, savedDraft, onSaveDraft, submitted }) => {
   const [selectedCharges, setSelectedCharges] = useState<Array<{ name: string; type: ChargeType }>>(
     savedDraft?.selectedCharges || [{ name: '', type: 'Incidental' }]
   );
-  const [phase, setPhase] = useState<'selection' | 'detail'>(savedDraft?.phase || 'selection');
+  const [phase, setPhase] = useState<'selection' | 'detail'>('selection');
   const [chargeData, setChargeData] = useState<ChargeData[]>(savedDraft?.chargeData || []);
   const [wasSentForApproval, setWasSentForApproval] = useState(savedDraft?.sentForApproval || false);
   const [activeChargeTab, setActiveChargeTab] = useState<ChargeType>('Incidental');
@@ -500,6 +501,16 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
             <span className="task-detail-title">{taskName}</span>
           </div>
         </div>
+        {submitted && (
+          <div style={{
+            margin: '12px 16px 0', padding: '8px 14px',
+            background: '#D3FFEA', color: '#0F6E3C',
+            borderRadius: 6, fontSize: 12, fontWeight: 700,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            &#10003; Submitted
+          </div>
+        )}
         <ChargeSelectionScreen
           charges={selectedCharges}
           onChange={setSelectedCharges}

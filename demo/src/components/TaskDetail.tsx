@@ -163,6 +163,8 @@ interface Props {
   onSubmit?: (fieldValues?: Record<string, string>) => void;
   onVendorTaskSubmit?: (vendors: string[]) => void;
   savedFieldValues?: Record<string, string>;
+  hideHeader?: boolean;
+  submitted?: boolean;
 }
 
 // Map shipment mode codes to display values for the Mode dropdown
@@ -170,7 +172,7 @@ const MODE_DISPLAY: Record<string, string> = {
   FCL: 'FCL', LCL: 'LCL', AIR: 'AIR', BB: 'BREAK BULK (MB)', BULK: 'BULK (MR)',
 };
 
-const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit, onVendorTaskSubmit, savedFieldValues }) => {
+const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit, onVendorTaskSubmit, savedFieldValues, hideHeader, submitted }) => {
   const [markDone, setMarkDone] = useState(true);
   const [selectedVendors, setSelectedVendors] = useState<string[]>(
     savedFieldValues?.['Vendor Selection'] ? savedFieldValues['Vendor Selection'].split(', ').filter(Boolean) : []
@@ -221,20 +223,58 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
 
   return (
     <div className="task-detail">
-      <div className="task-detail-header">
-        <div className="task-detail-header-left">
-          <button className="task-detail-close" onClick={onClose}>&#10005;</button>
-          <span className="task-detail-title">{task.name}</span>
-          <span className="task-detail-edit">&#9998;</span>
-          <span className={`task-detail-code ${task.code === 'TBD' ? 'tbd' : 'existing'}`}>
-            {task.code}
-          </span>
-          <span className="task-detail-deadline-wrap">
-            <span className="task-detail-deadline-label">Deadline:</span>
-            <span className="task-detail-deadline-value">20 Mar 2026</span>
-          </span>
+      {!hideHeader && (
+        <div className="task-detail-header">
+          <div className="task-detail-header-left">
+            <button className="task-detail-close" onClick={onClose}>&#10005;</button>
+            <span className="task-detail-title">{task.name}</span>
+            <span className="task-detail-edit">&#9998;</span>
+            <span className={`task-detail-code ${task.code === 'TBD' ? 'tbd' : 'existing'}`}>
+              {task.code}
+            </span>
+            <span className="task-detail-deadline-wrap">
+              <span className="task-detail-deadline-label">Deadline:</span>
+              <span className="task-detail-deadline-value">20 Mar 2026</span>
+            </span>
+          </div>
+          <div className="task-detail-actions">
+            {task.approved ? (
+              <>
+                <button className="btn-reject">Reject</button>
+                <button className="btn-approve" onClick={collectAndSubmit}>Approve</button>
+              </>
+            ) : (
+              <>
+                <label className="mark-done-label">
+                  <input type="checkbox" checked={markDone} onChange={e => setMarkDone(e.target.checked)} />
+                  Mark this task as done automatically?
+                </label>
+                <button className="btn-submit" onClick={() => {
+                  if (onVendorTaskSubmit && isVendorSelectionTask) {
+                    onVendorTaskSubmit(selectedVendors);
+                  } else {
+                    collectAndSubmit();
+                  }
+                }}>Submit</button>
+              </>
+            )}
+          </div>
         </div>
-        <div className="task-detail-actions">
+      )}
+
+      {submitted && (
+        <div style={{
+          margin: '12px 16px 0', padding: '8px 14px',
+          background: '#D3FFEA', color: '#0F6E3C',
+          borderRadius: 6, fontSize: 12, fontWeight: 700,
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          &#10003; Submitted
+        </div>
+      )}
+
+      {hideHeader && !submitted && (
+        <div style={{ padding: '12px 16px 0', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           {task.approved ? (
             <>
               <button className="btn-reject">Reject</button>
@@ -256,7 +296,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
             </>
           )}
         </div>
-      </div>
+      )}
 
       <div className="task-detail-body">
         {!hasF ? (

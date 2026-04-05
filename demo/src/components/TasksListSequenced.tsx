@@ -6,6 +6,7 @@ import GPOTaskView from './GPOTaskView';
 import type { GPOResult } from './GPOTaskView';
 import IncidentalChargesView from './IncidentalChargesView';
 import type { IncidentalDraft } from './IncidentalChargesView';
+import MultiVendorWrapper, { isMultiVendorPersona, getVendorNames } from './MultiVendorWrapper';
 
 const milestones = ['Drafts', 'Origin', 'In Transit', 'Destination'];
 
@@ -13,6 +14,7 @@ const STATUS_OPTS = [
   { v: 'Not Started', bg: '#F4F4F4', c: '#555' },
   { v: 'In Progress', bg: '#FFFED2', c: '#8B7000' },
   { v: 'Done', bg: '#D3FFEA', c: '#0F6E3C' },
+  { v: 'Pending', bg: '#FFF3E0', c: '#E65100' },
   { v: 'Sent for Approval', bg: '#E3F2FD', c: '#1565C0' },
   { v: 'Cancelled', bg: '#FFD3D3', c: '#A00' },
 ];
@@ -46,59 +48,46 @@ interface Props {
   activePersona: string;
   incoterm: string;
   shipmentMode: ShipmentMode;
-  shipmentId: string | null;
   onVendorSelected: (vendor: 'CFS' | 'ICD' | null) => void;
   onVisiblePersonasChange: (personas: string[]) => void;
+  // Lifted state from ActionsPanel (Fix 4)
+  statuses: Record<string, string>;
+  setStatuses: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  savedFields: Record<string, Record<string, string>>;
+  setSavedFields: React.Dispatch<React.SetStateAction<Record<string, Record<string, string>>>>;
+  vendorSelections: string[];
+  setVendorSelections: React.Dispatch<React.SetStateAction<string[]>>;
+  gpoResult: GPOResult | null;
+  setGpoResult: React.Dispatch<React.SetStateAction<GPOResult | null>>;
+  portDetails: { pol: string; pod: string };
+  setPortDetails: React.Dispatch<React.SetStateAction<{ pol: string; pod: string }>>;
+  isSpot: boolean;
+  setIsSpot: React.Dispatch<React.SetStateAction<boolean>>;
+  incidentalDrafts: Record<string, IncidentalDraft>;
+  setIncidentalDrafts: React.Dispatch<React.SetStateAction<Record<string, IncidentalDraft>>>;
+  openTaskKey: string | null;
+  setOpenTaskKey: React.Dispatch<React.SetStateAction<string | null>>;
+  collapsed: Record<string, boolean>;
+  setCollapsed: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  multiVendorSubmitted: Record<string, Set<number>>;
+  setMultiVendorSubmitted: React.Dispatch<React.SetStateAction<Record<string, Set<number>>>>;
 }
 
 const TasksListSequenced: React.FC<Props> = ({
-  allTasks, activePersona, incoterm, shipmentMode, shipmentId, onVendorSelected, onVisiblePersonasChange,
+  allTasks, activePersona, incoterm, shipmentMode, onVendorSelected, onVisiblePersonasChange,
+  statuses, setStatuses,
+  savedFields, setSavedFields,
+  vendorSelections, setVendorSelections,
+  gpoResult, setGpoResult,
+  portDetails, setPortDetails,
+  isSpot, setIsSpot,
+  incidentalDrafts, setIncidentalDrafts,
+  openTaskKey, setOpenTaskKey,
+  collapsed, setCollapsed,
+  multiVendorSubmitted, setMultiVendorSubmitted,
 }) => {
-  const [openTaskKey, setOpenTaskKey] = useState<string | null>(null);
-  const [statuses, setStatuses] = useState<Record<string, string>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [vendorSelections, setVendorSelections] = useState<string[]>([]);
-  const [gpoResult, setGpoResult] = useState<GPOResult | null>(null);
-  const [portDetails, setPortDetails] = useState<{ pol: string; pod: string }>({ pol: '', pod: '' });
-  const [savedFields, setSavedFields] = useState<Record<string, Record<string, string>>>({});
-  const [isSpot, setIsSpot] = useState(false);
-  const [incidentalDrafts, setIncidentalDrafts] = useState<Record<string, IncidentalDraft>>({});
-
-  // Pre-populated statuses for DEMO-READY shipment (all tasks done up to seq 25 = Detention Free Time)
-  const getDemoReadyStatuses = (): Record<string, string> => {
-    const doneStatuses: Record<string, string> = {};
-    // Mark all tasks up to and including seq 25 as Done
-    allTasks.forEach(t => {
-      if (t.seq <= 25) doneStatuses[t.taskKey] = 'Done';
-    });
-    return doneStatuses;
-  };
-
-  // Reset on shipment change
-  useEffect(() => {
-    setOpenTaskKey(null);
-    setCollapsed({});
-    setIsProcessing(false);
-    setToastMessage(null);
-    setSavedFields({});
-    setIncidentalDrafts({});
-
-    if (shipmentId === 'DEMO-READY') {
-      setStatuses(getDemoReadyStatuses());
-      setVendorSelections(['Freight Forwarder', 'CHA', 'Transporter']);
-      setGpoResult(null);
-      setPortDetails({ pol: 'SHANGHAI', pod: 'NHAVA SHEVA' });
-      setIsSpot(false);
-    } else {
-      setStatuses({});
-      setVendorSelections([]);
-      setGpoResult(null);
-      setPortDetails({ pol: '', pod: '' });
-      setIsSpot(false);
-    }
-  }, [shipmentId]);
 
   // Auto-dismiss toast after 3 seconds
   useEffect(() => {
@@ -107,6 +96,11 @@ const TasksListSequenced: React.FC<Props> = ({
       return () => clearTimeout(timer);
     }
   }, [toastMessage]);
+
+  // Fix 3: Close open task when persona switches
+  useEffect(() => {
+    setOpenTaskKey(null);
+  }, [activePersona]);
 
   const getStatus = (key: string) => statuses[key] || 'Not Started';
 
@@ -223,33 +217,98 @@ const TasksListSequenced: React.FC<Props> = ({
     'CFS Incidental Events', 'ICD Incidental Events', 'Transporter Incidental Events',
   ];
 
+  // Fix 1: Multi-vendor submit logic — mark vendor as submitted, complete task only when all done
+  const handleMultiVendorSubmit = useCallback((taskKey: string, vendorIdx: number, totalVendors: number, fieldValues?: Record<string, string>) => {
+    const fieldKey = `${taskKey}-v${vendorIdx}`;
+    if (fieldValues) {
+      setSavedFields(prev => ({ ...prev, [fieldKey]: fieldValues }));
+    }
+
+    setMultiVendorSubmitted(prev => {
+      const existing = prev[taskKey] ? new Set(prev[taskKey]) : new Set<number>();
+      existing.add(vendorIdx);
+      const updated = { ...prev, [taskKey]: existing };
+
+      // If all vendors submitted, complete the task
+      if (existing.size >= totalVendors) {
+        processTaskCompletion(taskKey, true);
+      } else {
+        // Mark as Pending when at least one vendor submitted
+        setStatuses(prev => ({ ...prev, [taskKey]: 'Pending' }));
+        setToastMessage(`Vendor ${vendorIdx + 1} submitted successfully`);
+      }
+
+      return updated;
+    });
+  }, [processTaskCompletion, setSavedFields, setMultiVendorSubmitted]);
+
   // Open task detail
   if (openTaskKey && !isProcessing) {
     const task = allTasks.find(t => t.taskKey === openTaskKey);
     if (task) {
       // Incidental Charges tasks
       if (INCIDENTAL_TASKS.includes(task.name)) {
-        return (
-          <IncidentalChargesView
-            taskName={task.name}
-            onClose={() => setOpenTaskKey(null)}
-            onSendForApproval={() => {
-              setIsProcessing(true);
-              const key = openTaskKey!;
-              setOpenTaskKey(null);
-              setTimeout(() => {
-                setStatuses(prev => ({ ...prev, [key]: 'Sent for Approval' }));
-                setIsProcessing(false);
-                setToastMessage('Sent for Approval successfully');
-              }, 1000);
-            }}
-            savedDraft={incidentalDrafts[openTaskKey] || null}
-            onSaveDraft={(draft) => {
-              setIncidentalDrafts(prev => ({ ...prev, [openTaskKey]: draft }));
-              setOpenTaskKey(null);
-            }}
-          />
-        );
+        const isMultiVendor = isMultiVendorPersona(task.persona);
+        const vendors = isMultiVendor ? getVendorNames(task.persona) : [task.persona];
+        const totalVendors = vendors.length;
+
+        const incidentalContent = (vendorIdx: number, _vendorName: string) => {
+          const draftKey = isMultiVendor ? `${openTaskKey}-v${vendorIdx}` : openTaskKey!;
+          const submitted = isMultiVendor
+            ? (multiVendorSubmitted[openTaskKey!] || new Set<number>()).has(vendorIdx)
+            : false;
+          return (
+            <IncidentalChargesView
+              taskName={task.name}
+              onClose={() => setOpenTaskKey(null)}
+              onSendForApproval={() => {
+                if (isMultiVendor) {
+                  handleMultiVendorSubmit(openTaskKey!, vendorIdx, totalVendors);
+                } else {
+                  setIsProcessing(true);
+                  const key = openTaskKey!;
+                  setOpenTaskKey(null);
+                  setTimeout(() => {
+                    setStatuses(prev => ({ ...prev, [key]: 'Sent for Approval' }));
+                    setIsProcessing(false);
+                    setToastMessage('Sent for Approval successfully');
+                  }, 1000);
+                }
+              }}
+              savedDraft={incidentalDrafts[draftKey] || null}
+              onSaveDraft={(draft) => {
+                setIncidentalDrafts(prev => ({ ...prev, [draftKey]: draft }));
+                setOpenTaskKey(null);
+              }}
+              submitted={submitted}
+            />
+          );
+        };
+
+        if (isMultiVendor) {
+          const submittedSet = multiVendorSubmitted[openTaskKey!] || new Set<number>();
+          return (
+            <div className="task-detail">
+              <div className="task-detail-header">
+                <div className="task-detail-header-left">
+                  <button className="task-detail-close" onClick={() => setOpenTaskKey(null)}>&#10005;</button>
+                  <span className="task-detail-title">{task.name}</span>
+                  <span className={`task-detail-code ${task.taskKey === 'TBD' ? 'tbd' : 'existing'}`}>
+                    {task.taskKey}
+                  </span>
+                  <span className="task-detail-deadline-wrap">
+                    <span className="task-detail-deadline-label">Deadline:</span>
+                    <span className="task-detail-deadline-value">20 Mar 2026</span>
+                  </span>
+                </div>
+              </div>
+              <MultiVendorWrapper persona={task.persona} submittedIndices={submittedSet}>
+                {(vendorIdx, vendorName) => incidentalContent(vendorIdx, vendorName)}
+              </MultiVendorWrapper>
+            </div>
+          );
+        }
+        return incidentalContent(0, task.persona);
       }
 
       // GPO Task — show bid cards
@@ -283,33 +342,79 @@ const TasksListSequenced: React.FC<Props> = ({
       }
 
       // Regular task detail
-      const fieldDef = TASK_FIELDS[task.name];
-      const taskObj = {
-        id: task.seq,
-        name: task.name,
-        org: task.persona,
-        code: task.taskKey,
-        team: task.assignee,
-        ms: task.milestone,
-        assignee: task.assignee === 'Ops' ? 'Reliance' : task.assignee,
-        approved: task.approved,
-        isNew: task.isNew,
-        fields: fieldDef?.fields || [],
-        docFields: fieldDef?.docFields,
-        docName: fieldDef?.docName,
+      const isMultiVendor = isMultiVendorPersona(task.persona);
+      const vendors = isMultiVendor ? getVendorNames(task.persona) : [task.assignee === 'Ops' ? 'Reliance' : task.assignee];
+      const totalVendors = vendors.length;
+
+      const regularContent = (vendorIdx: number, vendorName: string) => {
+        const fieldKey = isMultiVendor ? `${openTaskKey}-v${vendorIdx}` : openTaskKey!;
+        const fieldDef = TASK_FIELDS[task.name];
+        const taskObj = {
+          id: task.seq,
+          name: task.name,
+          org: task.persona,
+          code: task.taskKey,
+          team: task.assignee,
+          ms: task.milestone,
+          assignee: vendorName,
+          approved: task.approved,
+          isNew: task.isNew,
+          fields: fieldDef?.fields || [],
+          docFields: fieldDef?.docFields,
+          docName: fieldDef?.docName,
+        };
+        const isVendorSubmitted = isMultiVendor
+          ? (multiVendorSubmitted[openTaskKey!] || new Set<number>()).has(vendorIdx)
+          : false;
+        return (
+          <TaskDetail
+            task={taskObj}
+            incoterm={incoterm}
+            shipmentMode={shipmentMode}
+            onClose={() => setOpenTaskKey(null)}
+            onVendorSelected={onVendorSelected}
+            onSubmit={(fieldValues) => {
+              if (isMultiVendor) {
+                handleMultiVendorSubmit(openTaskKey!, vendorIdx, totalVendors, fieldValues);
+              } else {
+                if (fieldValues) {
+                  setSavedFields(prev => ({ ...prev, [fieldKey]: fieldValues }));
+                }
+                handleSubmitTask(openTaskKey!, fieldValues);
+              }
+            }}
+            onVendorTaskSubmit={task.name === 'Vendor Selection' ? handleVendorTaskSubmit : undefined}
+            savedFieldValues={savedFields[fieldKey]}
+            hideHeader={isMultiVendor}
+            submitted={isVendorSubmitted}
+          />
+        );
       };
-      return (
-        <TaskDetail
-          task={taskObj}
-          incoterm={incoterm}
-          shipmentMode={shipmentMode}
-          onClose={() => setOpenTaskKey(null)}
-          onVendorSelected={onVendorSelected}
-          onSubmit={(fieldValues) => handleSubmitTask(openTaskKey, fieldValues)}
-          onVendorTaskSubmit={task.name === 'Vendor Selection' ? handleVendorTaskSubmit : undefined}
-          savedFieldValues={savedFields[openTaskKey]}
-        />
-      );
+
+      if (isMultiVendor) {
+        const submittedSet = multiVendorSubmitted[openTaskKey!] || new Set<number>();
+        return (
+          <div className="task-detail">
+            <div className="task-detail-header">
+              <div className="task-detail-header-left">
+                <button className="task-detail-close" onClick={() => setOpenTaskKey(null)}>&#10005;</button>
+                <span className="task-detail-title">{task.name}</span>
+                <span className={`task-detail-code ${task.taskKey === 'TBD' ? 'tbd' : 'existing'}`}>
+                  {task.taskKey}
+                </span>
+                <span className="task-detail-deadline-wrap">
+                  <span className="task-detail-deadline-label">Deadline:</span>
+                  <span className="task-detail-deadline-value">20 Mar 2026</span>
+                </span>
+              </div>
+            </div>
+            <MultiVendorWrapper persona={task.persona} submittedIndices={submittedSet}>
+              {(vendorIdx, vendorName) => regularContent(vendorIdx, vendorName)}
+            </MultiVendorWrapper>
+          </div>
+        );
+      }
+      return regularContent(0, task.assignee === 'Ops' ? 'Reliance' : task.assignee);
     }
   }
 
@@ -317,10 +422,10 @@ const TasksListSequenced: React.FC<Props> = ({
 
   return (
     <div className="tasks-container" style={{ position: 'relative' }}>
-      {/* Loading overlay */}
+      {/* Fix 5: Full-screen loading overlay */}
       {isProcessing && (
         <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(255,255,255,0.85)', zIndex: 10,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 12,
@@ -397,7 +502,6 @@ const TasksListSequenced: React.FC<Props> = ({
                     const st = getStatus(t.taskKey);
                     const stObj = STATUS_OPTS.find(s => s.v === st) || STATUS_OPTS[0];
 
-
                     return (
                       <div key={t.taskKey} className="task-row">
                         <div className="task-cell-sn">{idx + 1}</div>
@@ -415,16 +519,7 @@ const TasksListSequenced: React.FC<Props> = ({
                           <div className={`task-deadline-text ${st !== 'Done' ? 'overdue' : 'normal'}`}>
                             Deadline: 20 Mar 2026
                           </div>
-                          {INCIDENTAL_TASKS.includes(t.name) && incidentalDrafts[t.taskKey] && st !== 'Done' && (
-                            <button
-                              onClick={e => { e.stopPropagation(); setOpenTaskKey(t.taskKey); }}
-                              style={{
-                                marginTop: 4, background: '#E3F2FD', color: '#006EC3',
-                                border: '1px solid #BBDEFB', borderRadius: 3, padding: '2px 8px',
-                                fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                              }}
-                            >Show Draft</button>
-                          )}
+                          {/* Fix 2: "Show Draft" button removed from task list row */}
                         </div>
 
                         <div className="task-cell-status" onClick={e => e.stopPropagation()}>
