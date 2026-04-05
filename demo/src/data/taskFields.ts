@@ -6,7 +6,7 @@ export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[];
   'Select Mode of Shipment': { fields: [
     { label: 'Mode', code: 'SMF87', value: 'FCL', type: 'dropdown', req: true, opts: ['FCL', 'LCL', 'AIR', 'BULK (MR)', 'BREAK BULK (MB)'], defaultVal: 'FCL' },
     { label: 'Incoterm', code: 'SMF88', value: 'EXW', type: 'dropdown', req: true, opts: ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'], defaultVal: 'EXW' },
-    { label: 'Spot / Normal', value: 'Normal', type: 'dropdown', req: true, opts: ['Spot', 'Normal'], defaultVal: 'Normal', note: 'NEW' },
+    { label: 'Spot / Normal', value: '', type: 'dropdown', req: true, opts: ['Spot', 'Normal'], note: 'NEW' },
   ] },
 
   'Select Port Details': { fields: [

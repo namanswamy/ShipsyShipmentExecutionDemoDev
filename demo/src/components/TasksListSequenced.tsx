@@ -56,8 +56,11 @@ const TasksListSequenced: React.FC<Props> = ({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [vendorSelections, setVendorSelections] = useState<string[]>([]); // vendors chosen in Vendor Selection task
+  const [vendorSelections, setVendorSelections] = useState<string[]>([]);
   const [gpoResult, setGpoResult] = useState<GPOResult | null>(null);
+  const [portDetails, setPortDetails] = useState<{ pol: string; pod: string }>({ pol: '', pod: '' });
+  const [savedFields, setSavedFields] = useState<Record<string, Record<string, string>>>({});
+  const [isSpot, setIsSpot] = useState(false);
 
   // Reset on shipment change
   useEffect(() => {
@@ -68,6 +71,9 @@ const TasksListSequenced: React.FC<Props> = ({
     setToastMessage(null);
     setVendorSelections([]);
     setGpoResult(null);
+    setPortDetails({ pol: '', pod: '' });
+    setSavedFields({});
+    setIsSpot(false);
   }, [shipmentId]);
 
   // Auto-dismiss toast after 3 seconds
@@ -134,15 +140,37 @@ const TasksListSequenced: React.FC<Props> = ({
     }
   };
 
-  // Handle submit from task detail
-  const handleSubmitTask = (taskKey: string) => {
+  // Handle submit from task detail — save field values and extract POL/POD
+  const handleSubmitTask = (taskKey: string, fieldValues?: Record<string, string>) => {
+    if (fieldValues) {
+      setSavedFields(prev => ({ ...prev, [taskKey]: fieldValues }));
+
+      const task = allTasks.find(t => t.taskKey === taskKey);
+
+      // Extract Spot/Normal from Select Mode of Shipment
+      if (task?.name === 'Select Mode of Shipment') {
+        setIsSpot(fieldValues['Spot / Normal'] === 'Spot');
+      }
+
+      // Extract POL/POD from Select Port Details
+      if (task?.name === 'Select Port Details') {
+        const pol = fieldValues['Port of Loading'] || '';
+        const pod = fieldValues['Port of Discharge'] || '';
+        // Extract port name from "CODE - Name" format
+        const polName = pol.includes(' - ') ? pol.split(' - ')[1] : pol;
+        const podName = pod.includes(' - ') ? pod.split(' - ')[1] : pod;
+        setPortDetails({ pol: polName.toUpperCase(), pod: podName.toUpperCase() });
+      }
+    }
     processTaskCompletion(taskKey, true);
   };
 
   // Track vendor selections from Vendor Selection task submit
   const handleVendorTaskSubmit = (vendors: string[]) => {
     setVendorSelections(vendors);
-    handleSubmitTask(openTaskKey!);
+    // Save vendor selections as field values for persistence
+    const vendorFieldValues: Record<string, string> = { 'Vendor Selection': vendors.join(', ') };
+    handleSubmitTask(openTaskKey!, vendorFieldValues);
   };
 
   // Handle GPO submit
@@ -173,6 +201,9 @@ const TasksListSequenced: React.FC<Props> = ({
         return (
           <GPOTaskView
             selectedVendors={vendorSelections}
+            pol={portDetails.pol}
+            pod={portDetails.pod}
+            isSpot={isSpot}
             onClose={() => setOpenTaskKey(null)}
             onSubmit={handleGPOSubmit}
           />
@@ -184,6 +215,9 @@ const TasksListSequenced: React.FC<Props> = ({
         return (
           <GPOTaskView
             selectedVendors={vendorSelections}
+            pol={portDetails.pol}
+            pod={portDetails.pod}
+            isSpot={isSpot}
             onClose={() => setOpenTaskKey(null)}
             onSubmit={handleL1Submit}
             readOnly={true}
@@ -215,8 +249,9 @@ const TasksListSequenced: React.FC<Props> = ({
           shipmentMode={shipmentMode}
           onClose={() => setOpenTaskKey(null)}
           onVendorSelected={onVendorSelected}
-          onSubmit={() => handleSubmitTask(openTaskKey)}
+          onSubmit={(fieldValues) => handleSubmitTask(openTaskKey, fieldValues)}
           onVendorTaskSubmit={task.name === 'Vendor Selection' ? handleVendorTaskSubmit : undefined}
+          savedFieldValues={savedFields[openTaskKey]}
         />
       );
     }

@@ -8,10 +8,11 @@ import type { Task, Field } from '../data/tasks';
 interface VendorAddMoreProps {
   f: Field;
   onSelectionChange: (selected: string[]) => void;
+  initialValues?: string[];
 }
 
-const VendorAddMoreField: React.FC<VendorAddMoreProps> = ({ f, onSelectionChange }) => {
-  const [rows, setRows] = useState<string[]>(['']);
+const VendorAddMoreField: React.FC<VendorAddMoreProps> = ({ f, onSelectionChange, initialValues }) => {
+  const [rows, setRows] = useState<string[]>(initialValues && initialValues.length > 0 ? initialValues : ['']);
   const allOpts = f.opts || [];
 
   const getAvailableOpts = (currentRowIndex: number) => {
@@ -119,22 +120,23 @@ const AddMoreField: React.FC<{ f: Field }> = ({ f }) => {
   );
 };
 
-const FieldInput: React.FC<{ f: Field }> = ({ f }) => {
+const FieldInput: React.FC<{ f: Field; value?: string; onChange?: (val: string) => void }> = ({ f, value, onChange }) => {
+  const handleChange = (val: string) => onChange?.(val);
   if (f.type === 'auto') return <div className="field-auto">{f.value || 'Auto-populated'}</div>;
   if (f.type === 'upload') return <button className="field-upload-btn">&#11014; Choose file</button>;
   if (f.type === 'addmore') return <AddMoreField f={f} />;
   if (f.type === 'dropdown' || f.type === 'multiselect') {
     return (
-      <select className="field-select" defaultValue={f.defaultVal || ''}>
-        {!f.defaultVal && <option value="" disabled>Select...</option>}
+      <select className="field-select" value={value ?? f.defaultVal ?? ''} onChange={e => handleChange(e.target.value)}>
+        {!f.defaultVal && !value && <option value="" disabled>Select...</option>}
         {(f.opts || []).map(o => <option key={o} value={o}>{o}</option>)}
       </select>
     );
   }
   if (f.type === 'date' || f.type === 'datetime') {
-    return <input className="field-input" type={f.type === 'datetime' ? 'datetime-local' : 'date'} />;
+    return <input className="field-input" type={f.type === 'datetime' ? 'datetime-local' : 'date'} value={value || ''} onChange={e => handleChange(e.target.value)} />;
   }
-  return <input className="field-input" type={f.type === 'number' ? 'number' : 'text'} placeholder="Enter value" />;
+  return <input className="field-input" type={f.type === 'number' ? 'number' : 'text'} placeholder="Enter value" value={value || ''} onChange={e => handleChange(e.target.value)} />;
 };
 
 const C_INCOTERMS = ['CIF', 'CFR', 'CPT', 'CIP'];
@@ -158,8 +160,9 @@ interface Props {
   shipmentMode?: string;
   onClose: () => void;
   onVendorSelected?: (vendor: 'CFS' | 'ICD' | null) => void;
-  onSubmit?: () => void;
+  onSubmit?: (fieldValues?: Record<string, string>) => void;
   onVendorTaskSubmit?: (vendors: string[]) => void;
+  savedFieldValues?: Record<string, string>;
 }
 
 // Map shipment mode codes to display values for the Mode dropdown
@@ -167,12 +170,23 @@ const MODE_DISPLAY: Record<string, string> = {
   FCL: 'FCL', LCL: 'LCL', AIR: 'AIR', BB: 'BREAK BULK (MB)', BULK: 'BULK (MR)',
 };
 
-const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit, onVendorTaskSubmit }) => {
+const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit, onVendorTaskSubmit, savedFieldValues }) => {
   const [markDone, setMarkDone] = useState(true);
-  const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(
+    savedFieldValues?.['Vendor Selection'] ? savedFieldValues['Vendor Selection'].split(', ').filter(Boolean) : []
+  );
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>(savedFieldValues || {});
   const allF = task.fields || [];
   const docF = task.docFields || [];
   const hasF = allF.length > 0 || docF.length > 0;
+
+  const updateField = (label: string, value: string) => {
+    setFieldValues(prev => ({ ...prev, [label]: value }));
+  };
+
+  const collectAndSubmit = () => {
+    if (onSubmit) onSubmit(fieldValues);
+  };
 
   // Auto-fill Mode & Incoterm for "Select Mode of Shipment" task
   const isSelectModeTask = task.name === 'Select Mode of Shipment';
@@ -224,7 +238,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
           {task.approved ? (
             <>
               <button className="btn-reject">Reject</button>
-              <button className="btn-approve" onClick={onSubmit}>Approve</button>
+              <button className="btn-approve" onClick={collectAndSubmit}>Approve</button>
             </>
           ) : (
             <>
@@ -235,8 +249,8 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
               <button className="btn-submit" onClick={() => {
                 if (onVendorTaskSubmit && isVendorSelectionTask) {
                   onVendorTaskSubmit(selectedVendors);
-                } else if (onSubmit) {
-                  onSubmit();
+                } else {
+                  collectAndSubmit();
                 }
               }}>Submit</button>
             </>
@@ -271,7 +285,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
                             </span>
                           )}
                         </div>
-                        <VendorAddMoreField f={filteredField} onSelectionChange={handleVendorChange} />
+                        <VendorAddMoreField f={filteredField} onSelectionChange={handleVendorChange} initialValues={selectedVendors.length > 0 ? selectedVendors : undefined} />
                       </div>
                     );
                   }
@@ -288,7 +302,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
                           </span>
                         )}
                       </div>
-                      <FieldInput f={f} />
+                      <FieldInput f={f} value={fieldValues[f.label]} onChange={v => updateField(f.label, v)} />
                     </div>
                   );
                 })}
@@ -310,7 +324,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
                           {f.req && <span className="field-required">*</span>}
                           {f.code && <span className="field-code-badge">{f.code}</span>}
                         </div>
-                        <FieldInput f={f} />
+                        <FieldInput f={f} value={fieldValues[f.label]} onChange={v => updateField(f.label, v)} />
                       </div>
                     ))}
                   </div>

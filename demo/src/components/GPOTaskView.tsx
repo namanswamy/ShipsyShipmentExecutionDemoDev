@@ -1,32 +1,167 @@
 import React, { useState, useMemo } from 'react';
 import type { Bid } from '../data/bidData';
-import { getBidsForVendors, formatAmount } from '../data/bidData';
+import { getBidsForVendors, getSpotBidsForVendors, getNormalRank1Bids, formatAmount } from '../data/bidData';
 import BidCard from './BidCard';
 
 interface GPOResult {
-  selectedBids: Record<string, string>; // vendorType -> bidId
+  selectedBids: Record<string, string>;
   totalBidAmount: number;
   totalDeviation: number;
   deviationReason: string;
   allBids: Bid[];
+  isSpot?: boolean;
+  normalRank1Bids?: Bid[];
 }
 
 interface Props {
   selectedVendors: string[];
+  pol?: string;
+  pod?: string;
+  isSpot?: boolean;
   onClose: () => void;
   onSubmit: (result: GPOResult) => void;
   readOnly?: boolean;
   previousResult?: GPOResult | null;
 }
 
-const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, readOnly, previousResult }) => {
-  const allBids = useMemo(() => previousResult?.allBids || getBidsForVendors(selectedVendors), [selectedVendors, previousResult]);
+// View Details Modal
+const ViewDetailsModal: React.FC<{ bid: Bid; onClose: () => void }> = ({ bid, onClose }) => (
+  <div style={{
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(0,0,0,0.4)', zIndex: 60,
+    display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+    paddingTop: 40,
+  }}>
+    <div style={{
+      background: '#fff', borderRadius: 8, width: 560, maxHeight: '80vh',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '14px 20px', borderBottom: '1px solid #eee', flexShrink: 0,
+      }}>
+        <span style={{ fontWeight: 700, fontSize: 15, color: '#333' }}>Detail View</span>
+        <button onClick={onClose} style={{
+          background: 'none', border: 'none', fontSize: 18, color: '#666', cursor: 'pointer',
+        }}>&#10005;</button>
+      </div>
+      <div style={{ overflowY: 'auto', flex: 1 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <tbody>
+            {Object.entries(bid.details).map(([key, value]) => (
+              <tr key={key} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                <td style={{
+                  padding: '10px 20px', fontWeight: 600, color: '#333',
+                  width: '40%', verticalAlign: 'top', background: '#FAFAFA',
+                }}>{key}</td>
+                <td style={{ padding: '10px 20px', color: '#555' }}>{value || '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+);
+
+// Normal Rank 1 Reference Card (non-editable, for Spot mode)
+const podOnlyVendors = ['CHA', 'CFS', 'ICD', 'Transporter', 'Surveyor'];
+
+const NormalRefCard: React.FC<{ bid: Bid; onViewDetails: () => void }> = ({ bid, onViewDetails }) => {
+  const showPol = !podOnlyVendors.includes(bid.vendorType) && bid.pol;
+  return (
+    <div style={{
+      border: '1px dashed #bbb', borderRadius: 6, marginBottom: 12,
+      background: '#F9F9F9', opacity: 0.85, overflow: 'hidden',
+    }}>
+      <div style={{
+        padding: '4px 20px', background: '#EDEDED', fontSize: 11, fontWeight: 600, color: '#666',
+      }}>
+        Normal RFQ Rank 1 Bid
+      </div>
+      <div style={{
+        display: 'flex', alignItems: 'center', padding: '12px 20px', flexWrap: 'wrap',
+      }}>
+        <div style={{
+          minWidth: 110, display: 'flex', alignItems: 'center', gap: 6,
+          paddingRight: 16, borderRight: '1px solid #ddd',
+        }}>
+          <img src="/shipsy-logo.jpg" alt="Shipsy" style={{ height: 24, objectFit: 'contain', opacity: 0.6 }} />
+        </div>
+        {showPol && (
+          <div style={{ minWidth: 90, padding: '0 16px' }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: '#666' }}>{bid.pol}</div>
+            <div style={{ fontSize: 10, color: '#aaa' }}>POL</div>
+          </div>
+        )}
+        <div style={{ minWidth: 90, padding: '0 16px' }}>
+          <div style={{ fontWeight: 600, fontSize: 13, color: '#666' }}>{bid.pod}</div>
+          <div style={{ fontSize: 10, color: '#aaa' }}>POD</div>
+        </div>
+        <div style={{ minWidth: 100, padding: '0 12px' }}>
+          <div style={{ fontWeight: 500, fontSize: 13, color: '#666' }}>{bid.startDate}</div>
+          <div style={{ fontSize: 10, color: '#aaa' }}>Starting Date</div>
+        </div>
+        <div style={{ minWidth: 100, padding: '0 12px' }}>
+          <div style={{ fontWeight: 500, fontSize: 13, color: '#666' }}>{bid.endDate}</div>
+          <div style={{ fontSize: 10, color: '#aaa' }}>End Date</div>
+        </div>
+        <div style={{
+          marginLeft: 'auto', background: '#F0F0F0', borderRadius: 4,
+          padding: '8px 16px', textAlign: 'right', minWidth: 130,
+        }}>
+          <div style={{ fontWeight: 700, fontSize: 17, color: '#666' }}>
+            {formatAmount(bid.amount, bid.currency)}
+          </div>
+          <div style={{ fontSize: 10, color: '#aaa' }}>Total Freight</div>
+        </div>
+      </div>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10, padding: '5px 20px',
+        background: '#EDEDED', borderTop: '1px solid #ddd', fontSize: 11, color: '#888',
+        flexWrap: 'wrap',
+      }}>
+        <span style={{ background: '#E8F5E9', color: '#2E7D32', padding: '2px 8px', borderRadius: 3, fontWeight: 600 }}>
+          Rank 1
+        </span>
+        <span>FF : {bid.vendorName}</span>
+        {bid.carrierName !== '-' && <span>Carrier : {bid.carrierName}</span>}
+        {bid.containerSize !== '-' && <span>Container Size : {bid.containerSize}</span>}
+        {bid.containerType !== '-' && <span>Container Type : {bid.containerType}</span>}
+        {bid.transitDays > 0 && <span>Transit Days {bid.transitDays}</span>}
+        <span
+          onClick={e => { e.stopPropagation(); onViewDetails(); }}
+          style={{ color: '#006EC3', cursor: 'pointer', fontWeight: 600 }}
+        >
+          View Details
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClose, onSubmit, readOnly, previousResult }) => {
+  // Generate bids
+  const allBids = useMemo(
+    () => previousResult?.allBids || (isSpot
+      ? getSpotBidsForVendors(selectedVendors, pol, pod)
+      : getBidsForVendors(selectedVendors, pol, pod)),
+    [selectedVendors, previousResult, pol, pod, isSpot]
+  );
+
+  const normalRank1Bids = useMemo(
+    () => previousResult?.normalRank1Bids || (isSpot
+      ? getNormalRank1Bids(selectedVendors, pol, pod)
+      : []),
+    [selectedVendors, previousResult, pol, pod, isSpot]
+  );
 
   const [selectedBids, setSelectedBids] = useState<Record<string, string>>(
     previousResult?.selectedBids || {}
   );
   const [showDeviationPopup, setShowDeviationPopup] = useState(false);
   const [deviationReason, setDeviationReason] = useState(previousResult?.deviationReason || '');
+  const [viewDetailBid, setViewDetailBid] = useState<Bid | null>(null);
 
   // Group bids by vendor type
   const groupedBids = useMemo(() => {
@@ -38,28 +173,45 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, read
     return groups;
   }, [allBids]);
 
+  // Group normal rank 1 by vendor type (for spot reference)
+  const normalRank1ByVendor = useMemo(() => {
+    const map: Record<string, Bid> = {};
+    for (const bid of normalRank1Bids) {
+      map[bid.vendorType] = bid;
+    }
+    return map;
+  }, [normalRank1Bids]);
+
+  const vendorTypes = Object.keys(groupedBids);
+  const [activeVendorTab, setActiveVendorTab] = useState(vendorTypes[0] || '');
+
   // Calculate totals
   const { totalBidAmount, totalDeviation } = useMemo(() => {
     let total = 0;
     let deviation = 0;
-
     for (const [vendorType, bidId] of Object.entries(selectedBids)) {
       const vendorBids = groupedBids[vendorType];
       if (!vendorBids) continue;
-
       const selectedBid = vendorBids.find(b => b.id === bidId);
-      const rank1Bid = vendorBids.find(b => b.rank === 1);
-
       if (selectedBid) {
         total += selectedBid.amount;
-        if (rank1Bid && selectedBid.rank > 1) {
-          deviation += selectedBid.amount - rank1Bid.amount;
+        if (isSpot) {
+          // Spot deviation: selected spot bid - normal rank 1 bid
+          const normalRef = normalRank1ByVendor[vendorType];
+          if (normalRef) {
+            deviation += selectedBid.amount - normalRef.amount;
+          }
+        } else {
+          // Normal deviation: selected bid - rank 1 bid
+          const rank1Bid = vendorBids.find(b => b.rank === 1);
+          if (rank1Bid && selectedBid.rank > 1) {
+            deviation += selectedBid.amount - rank1Bid.amount;
+          }
         }
       }
     }
-
     return { totalBidAmount: total, totalDeviation: deviation };
-  }, [selectedBids, groupedBids]);
+  }, [selectedBids, groupedBids, isSpot, normalRank1ByVendor]);
 
   const handleSelectBid = (vendorType: string, bidId: string) => {
     if (readOnly) return;
@@ -74,32 +226,23 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, read
   };
 
   const handleSubmit = () => {
-    if (totalDeviation > 0 && !deviationReason) {
+    // Spot always has deviation; Normal only if deviation > 0
+    if ((isSpot || totalDeviation > 0) && !deviationReason) {
       setShowDeviationPopup(true);
       return;
     }
-    onSubmit({
-      selectedBids,
-      totalBidAmount,
-      totalDeviation,
-      deviationReason,
-      allBids,
-    });
+    onSubmit({ selectedBids, totalBidAmount, totalDeviation, deviationReason, allBids, isSpot, normalRank1Bids });
   };
 
   const handleDeviationSubmit = () => {
     if (!deviationReason) return;
     setShowDeviationPopup(false);
-    onSubmit({
-      selectedBids,
-      totalBidAmount,
-      totalDeviation,
-      deviationReason,
-      allBids,
-    });
+    onSubmit({ selectedBids, totalBidAmount, totalDeviation, deviationReason, allBids, isSpot, normalRank1Bids });
   };
 
-  const allVendorsSelected = Object.keys(groupedBids).every(vt => selectedBids[vt]);
+  const allVendorsSelected = vendorTypes.every(vt => selectedBids[vt]);
+  const activeBids = groupedBids[activeVendorTab] || [];
+  const activeNormalRef = normalRank1ByVendor[activeVendorTab];
 
   return (
     <div className="task-detail">
@@ -108,8 +251,13 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, read
         <div className="task-detail-header-left">
           <button className="task-detail-close" onClick={onClose}>&#10005;</button>
           <span className="task-detail-title">
-            {readOnly ? 'Approval of L1 Deviation' : 'Run Global Plan Optimizer (SL/FF/AL Selection)'}
+            {readOnly ? 'Approval of L1 Deviation' : 'Run Global Plan Optimizer'}
           </span>
+          {isSpot && (
+            <span style={{ fontSize: 11, background: '#FFF3E0', color: '#E65100', padding: '2px 8px', borderRadius: 3, fontWeight: 600 }}>
+              SPOT
+            </span>
+          )}
           <span className="task-detail-deadline-wrap">
             <span className="task-detail-deadline-label">Deadline:</span>
             <span className="task-detail-deadline-value">06 Mar 2026</span>
@@ -120,7 +268,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, read
             <>
               <button className="btn-reject" onClick={onClose}>Reject</button>
               <button className="btn-approve" onClick={() => onSubmit({
-                selectedBids, totalBidAmount, totalDeviation, deviationReason, allBids,
+                selectedBids, totalBidAmount, totalDeviation, deviationReason, allBids, isSpot, normalRank1Bids,
               })}>Approve</button>
             </>
           ) : (
@@ -136,44 +284,61 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, read
         </div>
       </div>
 
+      {/* Vendor type tabs */}
+      <div style={{
+        display: 'flex', alignItems: 'center', padding: '0 16px',
+        borderBottom: '1px solid #e8e8e8', background: '#FAFAFA',
+      }}>
+        {vendorTypes.map(vt => (
+          <button
+            key={vt}
+            onClick={() => setActiveVendorTab(vt)}
+            style={{
+              padding: '10px 16px', fontSize: 13, fontFamily: 'inherit',
+              background: 'none', border: 'none', cursor: 'pointer',
+              borderBottom: activeVendorTab === vt ? '3px solid #006EC3' : '3px solid transparent',
+              color: activeVendorTab === vt ? '#006EC3' : '#666',
+              fontWeight: activeVendorTab === vt ? 700 : 400,
+            }}
+          >
+            {vt}
+            {selectedBids[vt] && <span style={{ color: '#43A047', marginLeft: 6, fontSize: 12 }}>&#10003;</span>}
+          </button>
+        ))}
+      </div>
+
       {/* Body */}
-      <div className="task-detail-body" style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 16 }}>Bid Details</div>
+      <div className="task-detail-body" style={{ maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 12 }}>
+          {isSpot ? 'Spot Bid Details' : 'Bid Details'} — {activeVendorTab}
+          {!selectedBids[activeVendorTab] && !readOnly && (
+            <span style={{ fontWeight: 400, color: '#999', marginLeft: 8, fontSize: 11 }}>
+              (Select one bid)
+            </span>
+          )}
+        </div>
 
-        {Object.entries(groupedBids).map(([vendorType, bids]) => (
-          <div key={vendorType} style={{ marginBottom: 24 }}>
-            {/* Vendor type header with container badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <span style={{
-                background: '#E3F2FD', color: '#006EC3', padding: '4px 12px',
-                borderRadius: 4, fontWeight: 600, fontSize: 13, border: '1px solid #BBDEFB',
-              }}>
-                {vendorType}
-              </span>
-              {selectedBids[vendorType] && (
-                <span style={{ fontSize: 11, color: '#43A047', fontWeight: 600 }}>
-                  &#10003; Bid selected
-                </span>
-              )}
-            </div>
+        {/* Normal Rank 1 reference card (Spot mode only) */}
+        {isSpot && activeNormalRef && (
+          <NormalRefCard bid={activeNormalRef} onViewDetails={() => setViewDetailBid(activeNormalRef)} />
+        )}
 
-            {/* Bid cards */}
-            {bids.map(bid => (
-              <BidCard
-                key={bid.id}
-                bid={bid}
-                selected={selectedBids[vendorType] === bid.id}
-                onClick={() => handleSelectBid(vendorType, bid.id)}
-                readOnly={readOnly}
-                dimmed={readOnly && selectedBids[vendorType] !== bid.id}
-              />
-            ))}
-          </div>
+        {/* Bid cards for active vendor tab */}
+        {activeBids.map(bid => (
+          <BidCard
+            key={bid.id}
+            bid={bid}
+            selected={selectedBids[activeVendorTab] === bid.id}
+            onClick={() => handleSelectBid(activeVendorTab, bid.id)}
+            readOnly={readOnly}
+            dimmed={readOnly && selectedBids[activeVendorTab] !== bid.id}
+            onViewDetails={() => setViewDetailBid(bid)}
+          />
         ))}
 
         {/* Totals section */}
         <div style={{
-          borderTop: '2px solid #e0e0e0', paddingTop: 16, marginTop: 16,
+          borderTop: '2px solid #e0e0e0', paddingTop: 16, marginTop: 20,
           display: 'flex', gap: 24, flexWrap: 'wrap',
         }}>
           <div style={{ flex: 1, minWidth: 200 }}>
@@ -186,7 +351,9 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, read
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>Total Deviation Amount</div>
+            <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>
+              {isSpot ? 'Spot Deviation from Normal' : 'Total Deviation Amount'}
+            </div>
             <div style={{
               background: totalDeviation > 0 ? '#FFF3E0' : '#F5F5F5', borderRadius: 4,
               padding: '10px 16px', fontSize: 18, fontWeight: 700,
@@ -211,6 +378,11 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, read
         )}
       </div>
 
+      {/* View Details Modal */}
+      {viewDetailBid && (
+        <ViewDetailsModal bid={viewDetailBid} onClose={() => setViewDetailBid(null)} />
+      )}
+
       {/* Deviation popup */}
       {showDeviationPopup && (
         <div style={{
@@ -223,10 +395,13 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, read
             boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
           }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: '#333', marginBottom: 4 }}>
-              Deviation Detected
+              {isSpot ? 'Spot Rate Deviation' : 'Deviation Detected'}
             </div>
             <div style={{ fontSize: 12, color: '#999', marginBottom: 16 }}>
-              A bid other than Rank 1 was selected. Total deviation: <b style={{ color: '#E65100' }}>{formatAmount(totalDeviation, 'USD')}</b>
+              {isSpot
+                ? <>Spot rate deviates from Normal RFQ Rank 1. Deviation: <b style={{ color: '#E65100' }}>{formatAmount(totalDeviation, 'USD')}</b></>
+                : <>A bid other than Rank 1 was selected. Total deviation: <b style={{ color: '#E65100' }}>{formatAmount(totalDeviation, 'USD')}</b></>
+              }
             </div>
             <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>
               Reason for Deviation <span style={{ color: '#E53935' }}>*</span>
