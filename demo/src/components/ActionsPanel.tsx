@@ -1,27 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { tasks as allTasks, personas } from '../data/tasks';
-import TasksList from './TasksList';
+import { personas } from '../data/tasks';
+import type { ShipmentMode } from '../data/taskSequence';
+import { resolveTasksForShipment } from '../data/taskSequence';
+import TasksListSequenced from './TasksListSequenced';
 
 interface Props {
   selectedShipmentId: string | null;
   incoterm: string;
+  shipmentMode: string;
 }
-
-const C_INCOTERMS = ['CIF', 'CFR', 'CPT', 'CIP'];
-const D_INCOTERMS = ['DAP', 'DPU', 'DDP'];
-
-const getVisiblePersonas = (incoterm: string) => {
-  if (C_INCOTERMS.includes(incoterm)) {
-    // Hide FF, keep Shipper, CHA, CFS, ICD, Transporter
-    return personas.filter(p => p.id !== 'FF');
-  }
-  if (D_INCOTERMS.includes(incoterm)) {
-    // Only Shipper and Transporter
-    return personas.filter(p => p.id === 'Shipper' || p.id === 'Transporter');
-  }
-  // All personas
-  return personas;
-};
 
 const actionTabs = [
   { key: 'tasks', label: 'Tasks' },
@@ -47,13 +34,22 @@ const MoreIcon = () => (
   </svg>
 );
 
-const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm }) => {
+const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentMode }) => {
   const [activeTab, setActiveTab] = useState('tasks');
   const [activePersona, setActivePersona] = useState('Shipper');
   const [showActivity, setShowActivity] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState<'CFS' | 'ICD' | null>(null);
+  const [visiblePersonaIds, setVisiblePersonaIds] = useState<string[]>(['Shipper']);
 
-  const visiblePersonas = useMemo(() => getVisiblePersonas(incoterm), [incoterm]);
+  const mode = (shipmentMode === 'BB' || shipmentMode === 'BULK') ? shipmentMode as ShipmentMode
+    : shipmentMode === 'Break Bulk' ? 'BB' as ShipmentMode
+    : shipmentMode as ShipmentMode;
+
+  const allResolvedTasks = useMemo(
+    () => resolveTasksForShipment(mode, incoterm, selectedVendor),
+    [mode, incoterm, selectedVendor]
+  );
 
   // Reset everything when shipment changes
   useEffect(() => {
@@ -61,18 +57,21 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm }) => {
     setActiveTab('tasks');
     setShowActivity(false);
     setShowChat(false);
+    setSelectedVendor(null);
+    setVisiblePersonaIds(['Shipper']);
   }, [selectedShipmentId]);
 
-  // Reset to Shipper if current persona is hidden due to incoterm change
+  // Reset to Shipper if current persona becomes hidden
   useEffect(() => {
-    if (!visiblePersonas.find(p => p.id === activePersona)) {
+    if (!visiblePersonaIds.includes(activePersona)) {
       setActivePersona('Shipper');
     }
-  }, [visiblePersonas, activePersona]);
+  }, [visiblePersonaIds, activePersona]);
 
-  const personaTasks = useMemo(
-    () => allTasks.filter(t => t.org === activePersona),
-    [activePersona]
+  // Filter personas list to only those with visible tasks
+  const displayPersonas = useMemo(
+    () => personas.filter(p => visiblePersonaIds.includes(p.id)),
+    [visiblePersonaIds]
   );
 
   if (!selectedShipmentId) {
@@ -99,31 +98,23 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm }) => {
           ))}
         </div>
         <div className="action-tabs-right">
-          <button
-            className="action-icon-btn"
-            title="Activity"
-            onClick={() => { setShowActivity(!showActivity); setShowChat(false); }}
-          >
+          <button className="action-icon-btn" title="Activity"
+            onClick={() => { setShowActivity(!showActivity); setShowChat(false); }}>
             <ListIcon />
           </button>
-          <button
-            className="action-icon-btn"
-            title="Chat"
-            onClick={() => { setShowChat(!showChat); setShowActivity(false); }}
-          >
+          <button className="action-icon-btn" title="Chat"
+            onClick={() => { setShowChat(!showChat); setShowActivity(false); }}>
             <ChatIcon />
           </button>
-          <button className="action-icon-btn" title="More">
-            <MoreIcon />
-          </button>
+          <button className="action-icon-btn" title="More"><MoreIcon /></button>
         </div>
       </div>
 
-      {/* Persona switcher - filtered by incoterm */}
+      {/* Persona switcher — only shows personas with unlocked tasks */}
       {activeTab === 'tasks' && (
         <div className="persona-bar">
           <span className="persona-label">Persona:</span>
-          {visiblePersonas.map(p => (
+          {displayPersonas.map(p => (
             <button
               key={p.id}
               className={`persona-tab ${activePersona === p.id ? 'active' : ''}`}
@@ -168,7 +159,17 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm }) => {
           Switch to <b>Tasks</b> tab to manage shipment tasks.
         </div>
       )}
-      {activeTab === 'tasks' && <TasksList tasks={personaTasks} incoterm={incoterm} shipmentId={selectedShipmentId} />}
+      {activeTab === 'tasks' && (
+        <TasksListSequenced
+          allTasks={allResolvedTasks}
+          activePersona={activePersona}
+          incoterm={incoterm}
+          shipmentMode={mode}
+          shipmentId={selectedShipmentId}
+          onVendorSelected={setSelectedVendor}
+          onVisiblePersonasChange={setVisiblePersonaIds}
+        />
+      )}
     </div>
   );
 };

@@ -22,11 +22,29 @@ const EyeIcon = () => (
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
   </svg>
 );
-const FCLIcon = () => (
-  <svg width="14" height="12" viewBox="0 0 24 18" fill="none" stroke="#333" strokeWidth="1.5">
-    <rect x="1" y="3" width="22" height="12" rx="1"/><line x1="1" y1="9" x2="23" y2="9"/><line x1="8" y1="3" x2="8" y2="15"/><line x1="16" y1="3" x2="16" y2="15"/>
-  </svg>
-);
+const ModeIconSvg: React.FC<{ mode: string }> = ({ mode }) => {
+  if (mode === 'FCL') return (
+    <svg width="14" height="12" viewBox="0 0 24 18" fill="none" stroke="#333" strokeWidth="1.5">
+      <rect x="1" y="3" width="22" height="12" rx="1"/><line x1="1" y1="9" x2="23" y2="9"/><line x1="8" y1="3" x2="8" y2="15"/><line x1="16" y1="3" x2="16" y2="15"/>
+    </svg>
+  );
+  if (mode === 'LCL') return (
+    <svg width="14" height="12" viewBox="0 0 24 18" fill="none" stroke="#333" strokeWidth="1.5">
+      <rect x="3" y="5" width="18" height="12" rx="1"/><polyline points="3 5 12 1 21 5"/>
+    </svg>
+  );
+  if (mode === 'AIR') return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.5">
+      <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>
+    </svg>
+  );
+  // BB / BULK
+  return (
+    <svg width="14" height="12" viewBox="0 0 24 18" fill="none" stroke="#333" strokeWidth="1.5">
+      <rect x="1" y="3" width="22" height="12" rx="1"/><line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+  );
+};
 
 interface Props {
   data: ShipmentData;
@@ -45,7 +63,7 @@ const ShipmentCard: React.FC<Props> = ({ data, selected, onClick }) => {
       <div className="s-card-header">
         <div className="s-card-header-left">
           <span className="s-card-ref">{data.masterReferenceNumber}</span>
-          <span className="s-card-mode-icon"><FCLIcon /></span>
+          <span className="s-card-mode-icon"><ModeIconSvg mode={data.mode} /></span>
           <span className="s-card-mode-label">{data.mode}</span>
           <span className="s-card-dot" />
           <span className="s-card-type">{data.type}</span>

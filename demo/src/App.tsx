@@ -65,7 +65,7 @@ function App() {
           ))}
         </div>
         <div className="shipment-actions-panel">
-          <ActionsPanel selectedShipmentId={selectedShipmentId} incoterm={selectedShipment?.incoterm || ''} />
+          <ActionsPanel selectedShipmentId={selectedShipmentId} incoterm={selectedShipment?.incoterm || ''} shipmentMode={selectedShipment?.mode || 'FCL'} />
         </div>
       </div>
     </div>

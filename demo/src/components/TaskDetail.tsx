@@ -155,19 +155,46 @@ const getVendorOptions = (allOpts: string[], incoterm: string) => {
 interface Props {
   task: Task;
   incoterm: string;
+  shipmentMode?: string;
   onClose: () => void;
+  onVendorSelected?: (vendor: 'CFS' | 'ICD' | null) => void;
+  onSubmit?: () => void;
 }
 
-const TaskDetail: React.FC<Props> = ({ task, incoterm, onClose }) => {
+// Map shipment mode codes to display values for the Mode dropdown
+const MODE_DISPLAY: Record<string, string> = {
+  FCL: 'FCL', LCL: 'LCL', AIR: 'AIR', BB: 'BREAK BULK (MB)', BULK: 'BULK (MR)',
+};
+
+const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit }) => {
   const [markDone, setMarkDone] = useState(true);
   const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
   const allF = task.fields || [];
   const docF = task.docFields || [];
   const hasF = allF.length > 0 || docF.length > 0;
 
-  // For Task #4 (Vendor Selection): check if CFS or ICD is selected
-  const isVendorSelectionTask = task.id === 4;
+  // Auto-fill Mode & Incoterm for "Select Mode of Shipment" task
+  const isSelectModeTask = task.name === 'Select Mode of Shipment';
+  if (isSelectModeTask && shipmentMode) {
+    allF.forEach(f => {
+      if (f.label === 'Mode') f.defaultVal = MODE_DISPLAY[shipmentMode] || shipmentMode;
+      if (f.label === 'Incoterm') f.defaultVal = incoterm;
+    });
+  }
+
+  // For Vendor Selection task: check if CFS or ICD is selected
+  const isVendorSelectionTask = task.name === 'Vendor Selection';
   const showConditionalFields = selectedVendors.includes('CFS') || selectedVendors.includes('ICD');
+
+  // Notify parent when vendor selection changes
+  const handleVendorChange = (vendors: string[]) => {
+    setSelectedVendors(vendors);
+    if (onVendorSelected) {
+      if (vendors.includes('CFS')) onVendorSelected('CFS');
+      else if (vendors.includes('ICD')) onVendorSelected('ICD');
+      else onVendorSelected(null);
+    }
+  };
 
   const shouldShowField = (f: Field) => {
     // For vendor selection task, hide conditional fields unless CFS/ICD selected
@@ -196,7 +223,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, onClose }) => {
           {task.approved ? (
             <>
               <button className="btn-reject">Reject</button>
-              <button className="btn-approve">Approve</button>
+              <button className="btn-approve" onClick={onSubmit}>Approve</button>
             </>
           ) : (
             <>
@@ -204,7 +231,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, onClose }) => {
                 <input type="checkbox" checked={markDone} onChange={e => setMarkDone(e.target.checked)} />
                 Mark this task as done automatically?
               </label>
-              <button className="btn-submit">Submit</button>
+              <button className="btn-submit" onClick={onSubmit}>Submit</button>
             </>
           )}
         </div>
@@ -237,7 +264,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, onClose }) => {
                             </span>
                           )}
                         </div>
-                        <VendorAddMoreField f={filteredField} onSelectionChange={setSelectedVendors} />
+                        <VendorAddMoreField f={filteredField} onSelectionChange={handleVendorChange} />
                       </div>
                     );
                   }
