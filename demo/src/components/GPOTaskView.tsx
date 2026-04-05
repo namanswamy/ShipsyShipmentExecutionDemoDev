@@ -19,16 +19,6 @@ interface Props {
   previousResult?: GPOResult | null;
 }
 
-const DEVIATION_REASONS = [
-  'Rate higher than L1',
-  'Preferred carrier unavailable',
-  'Schedule mismatch',
-  'Equipment unavailability',
-  'Port congestion',
-  'Customer request',
-  'Other',
-];
-
 const GPOTaskView: React.FC<Props> = ({ selectedVendors, onClose, onSubmit, readOnly, previousResult }) => {
   const allBids = useMemo(() => previousResult?.allBids || getBidsForVendors(selectedVendors), [selectedVendors, previousResult]);
 

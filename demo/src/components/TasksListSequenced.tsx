@@ -347,10 +347,10 @@ const TasksListSequenced: React.FC<Props> = ({
 
                         <div className="task-cell-assignee">
                           <div className="task-assignee-user">
-                            {t.assignee === 'Ops' || t.assignee === 'ULIP/Ops' ? 'Ops | RBL' : t.assignee}
+                            {t.persona === 'Shipper' ? 'Ops | RBL' : `Demo ${t.persona}`}
                           </div>
                           <div className="task-assignee-org">
-                            {t.persona === 'Shipper' ? 'Reliance' : t.assignee}
+                            {t.persona === 'Shipper' ? 'Reliance' : t.persona}
                           </div>
                         </div>
 
