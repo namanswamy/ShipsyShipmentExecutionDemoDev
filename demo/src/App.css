@@ -1058,7 +1058,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 18px 40px;
 }
-.field-item {}
 .field-item.full-width { grid-column: 1 / -1; }
 .field-label {
   font-size: 13px;
