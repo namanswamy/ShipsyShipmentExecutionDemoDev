@@ -248,7 +248,7 @@ const TasksListSequenced: React.FC<Props> = ({
                   {msTasks.map((t, idx) => {
                     const st = getStatus(t.taskKey);
                     const stObj = STATUS_OPTS.find(s => s.v === st) || STATUS_OPTS[0];
-                    const isCurrentActive = t.seq === currentActiveSeq;
+
 
                     return (
                       <div key={t.taskKey} className="task-row">
@@ -263,10 +263,6 @@ const TasksListSequenced: React.FC<Props> = ({
                           <div className="task-name-row">
                             <span className="task-name-text">{t.name}</span>
                             {st === 'Done' && <span style={{ color: '#52c41a' }}><CheckIcon /></span>}
-                            {t.isNew && <span style={{ fontSize: 9, background: '#FFF3E0', color: '#E65100', padding: '1px 5px', borderRadius: 3, fontWeight: 600 }}>NEW</span>}
-                            {isCurrentActive && st !== 'Done' && (
-                              <span style={{ fontSize: 9, background: '#E3F2FD', color: '#1565C0', padding: '1px 5px', borderRadius: 3, fontWeight: 600 }}>ACTIVE</span>
-                            )}
                           </div>
                           <div className={`task-deadline-text ${st !== 'Done' ? 'overdue' : 'normal'}`}>
                             Deadline: 20 Mar 2026
