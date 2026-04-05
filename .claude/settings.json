@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)",
+      "Bash(npm list:*)",
+      "Bash(npx vercel:*)",
+      "Bash(gh auth:*)"
+    ]
+  }
+}
