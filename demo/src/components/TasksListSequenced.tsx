@@ -4,6 +4,8 @@ import { TASK_FIELDS } from '../data/taskFields';
 import TaskDetail from './TaskDetail';
 import GPOTaskView from './GPOTaskView';
 import type { GPOResult } from './GPOTaskView';
+import IncidentalChargesView from './IncidentalChargesView';
+import type { IncidentalDraft } from './IncidentalChargesView';
 
 const milestones = ['Drafts', 'Origin', 'In Transit', 'Destination'];
 
@@ -61,6 +63,7 @@ const TasksListSequenced: React.FC<Props> = ({
   const [portDetails, setPortDetails] = useState<{ pol: string; pod: string }>({ pol: '', pod: '' });
   const [savedFields, setSavedFields] = useState<Record<string, Record<string, string>>>({});
   const [isSpot, setIsSpot] = useState(false);
+  const [incidentalDrafts, setIncidentalDrafts] = useState<Record<string, IncidentalDraft>>({});
 
   // Reset on shipment change
   useEffect(() => {
@@ -74,6 +77,7 @@ const TasksListSequenced: React.FC<Props> = ({
     setPortDetails({ pol: '', pod: '' });
     setSavedFields({});
     setIsSpot(false);
+    setIncidentalDrafts({});
   }, [shipmentId]);
 
   // Auto-dismiss toast after 3 seconds
@@ -192,10 +196,35 @@ const TasksListSequenced: React.FC<Props> = ({
     handleSubmitTask(openTaskKey!);
   };
 
+  // Incidental task names
+  const INCIDENTAL_TASKS = [
+    'FF Incidental Events', 'CHA Incidental Events',
+    'CFS Incidental Events', 'ICD Incidental Events', 'Transporter Incidental Events',
+  ];
+
   // Open task detail
   if (openTaskKey && !isProcessing) {
     const task = allTasks.find(t => t.taskKey === openTaskKey);
     if (task) {
+      // Incidental Charges tasks
+      if (INCIDENTAL_TASKS.includes(task.name)) {
+        return (
+          <IncidentalChargesView
+            taskName={task.name}
+            onClose={() => setOpenTaskKey(null)}
+            onSendForApproval={() => {
+              setStatuses(prev => ({ ...prev, [openTaskKey]: 'Sent for Approval' }));
+              processTaskCompletion(openTaskKey, true);
+            }}
+            savedDraft={incidentalDrafts[openTaskKey] || null}
+            onSaveDraft={(draft) => {
+              setIncidentalDrafts(prev => ({ ...prev, [openTaskKey]: draft }));
+              setOpenTaskKey(null);
+            }}
+          />
+        );
+      }
+
       // GPO Task — show bid cards
       if (task.name === 'Run Global Plan Optimizer') {
         return (
@@ -359,6 +388,16 @@ const TasksListSequenced: React.FC<Props> = ({
                           <div className={`task-deadline-text ${st !== 'Done' ? 'overdue' : 'normal'}`}>
                             Deadline: 20 Mar 2026
                           </div>
+                          {INCIDENTAL_TASKS.includes(t.name) && incidentalDrafts[t.taskKey] && st !== 'Done' && (
+                            <button
+                              onClick={e => { e.stopPropagation(); setOpenTaskKey(t.taskKey); }}
+                              style={{
+                                marginTop: 4, background: '#E3F2FD', color: '#006EC3',
+                                border: '1px solid #BBDEFB', borderRadius: 3, padding: '2px 8px',
+                                fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                              }}
+                            >Show Draft</button>
+                          )}
                         </div>
 
                         <div className="task-cell-status" onClick={e => e.stopPropagation()}>
