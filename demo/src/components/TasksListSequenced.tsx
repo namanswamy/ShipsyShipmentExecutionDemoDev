@@ -65,19 +65,38 @@ const TasksListSequenced: React.FC<Props> = ({
   const [isSpot, setIsSpot] = useState(false);
   const [incidentalDrafts, setIncidentalDrafts] = useState<Record<string, IncidentalDraft>>({});
 
+  // Pre-populated statuses for DEMO-READY shipment (all tasks done up to seq 25 = Detention Free Time)
+  const getDemoReadyStatuses = (): Record<string, string> => {
+    const doneStatuses: Record<string, string> = {};
+    // Mark all tasks up to and including seq 25 as Done
+    allTasks.forEach(t => {
+      if (t.seq <= 25) doneStatuses[t.taskKey] = 'Done';
+    });
+    return doneStatuses;
+  };
+
   // Reset on shipment change
   useEffect(() => {
     setOpenTaskKey(null);
-    setStatuses({});
     setCollapsed({});
     setIsProcessing(false);
     setToastMessage(null);
-    setVendorSelections([]);
-    setGpoResult(null);
-    setPortDetails({ pol: '', pod: '' });
     setSavedFields({});
-    setIsSpot(false);
     setIncidentalDrafts({});
+
+    if (shipmentId === 'DEMO-READY') {
+      setStatuses(getDemoReadyStatuses());
+      setVendorSelections(['Freight Forwarder', 'CHA', 'Transporter']);
+      setGpoResult(null);
+      setPortDetails({ pol: 'SHANGHAI', pod: 'NHAVA SHEVA' });
+      setIsSpot(false);
+    } else {
+      setStatuses({});
+      setVendorSelections([]);
+      setGpoResult(null);
+      setPortDetails({ pol: '', pod: '' });
+      setIsSpot(false);
+    }
   }, [shipmentId]);
 
   // Auto-dismiss toast after 3 seconds

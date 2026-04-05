@@ -20,6 +20,7 @@ export interface IncidentalDraft {
   selectedCharges: Array<{ name: string; type: ChargeType }>;
   chargeData: ChargeData[];
   phase: 'selection' | 'detail';
+  sentForApproval?: boolean; // true after Send for Approval is clicked
 }
 
 interface Props {
@@ -141,7 +142,8 @@ const inputSmall: React.CSSProperties = {
 const IncidentalTable: React.FC<{
   charge: ChargeData;
   onUpdate: (c: ChargeData) => void;
-}> = ({ charge, onUpdate }) => {
+  statusText: string;
+}> = ({ charge, onUpdate, statusText }) => {
   const rates = INCIDENTAL_RATES[charge.chargeName] || { blRate: 600, containerRate: 300 };
 
   const toggleBL = (idx: number) => {
@@ -176,7 +178,7 @@ const IncidentalTable: React.FC<{
               <td style={tdStyle}>{r.blNo}</td><td style={tdStyle}>{r.blDate}</td>
               <td style={tdStyle}>{rates.blRate}</td><td style={tdStyle}>INR</td>
               <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
-              <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? 'Send for Approval' : '—'}</td>
+              <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? statusText : '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -189,6 +191,7 @@ const IncidentalTable: React.FC<{
         <thead><tr>
           <th style={{ ...thStyle, width: 30 }}>☐</th>
           <th style={thStyle}>Container No</th><th style={thStyle}>PCD</th>
+          <th style={thStyle}>Rate based on PCD</th><th style={thStyle}>Currency</th>
           <th style={thStyle}>Attachment</th><th style={thStyle}>Status</th>
         </tr></thead>
         <tbody>
@@ -196,8 +199,9 @@ const IncidentalTable: React.FC<{
             <tr key={r.id}>
               <td style={tdStyle}><input type="checkbox" checked={r.selected} onChange={() => toggleCN(i)} /></td>
               <td style={tdStyle}>{r.containerNo}</td><td style={tdStyle}>{r.date}</td>
+              <td style={tdStyle}>{rates.containerRate}</td><td style={tdStyle}>INR</td>
               <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
-              <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? 'Send for Approval' : '—'}</td>
+              <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? statusText : '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -211,7 +215,8 @@ const IncidentalTable: React.FC<{
 const SelfReimbTable: React.FC<{
   charge: ChargeData;
   onUpdate: (c: ChargeData) => void;
-}> = ({ charge, onUpdate }) => {
+  statusText: string;
+}> = ({ charge, onUpdate, statusText }) => {
   const updateBL = (idx: number, field: keyof BLRow, value: string) => {
     const updated = { ...charge, blRows: charge.blRows.map((r, i) => i === idx ? { ...r, [field]: value } : r) };
     onUpdate(updated);
@@ -252,7 +257,7 @@ const SelfReimbTable: React.FC<{
               <td style={tdStyle}><input style={inputSmall} type="number" placeholder="Enter rate" value={r.rate} onChange={e => updateBL(i, 'rate', e.target.value)} /></td>
               <td style={tdStyle}><select style={{ ...inputSmall, width: 70 }} value={r.currency} onChange={e => updateBL(i, 'currency', e.target.value)}><option>INR</option><option>USD</option></select></td>
               <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
-              <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? 'Send for Approval' : '—'}</td>
+              <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? statusText : '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -275,7 +280,7 @@ const SelfReimbTable: React.FC<{
               <td style={tdStyle}><input style={inputSmall} type="number" placeholder="Enter rate" value={r.rate} onChange={e => updateCN(i, 'rate', e.target.value)} /></td>
               <td style={tdStyle}><select style={{ ...inputSmall, width: 70 }} value={r.currency} onChange={e => updateCN(i, 'currency', e.target.value)}><option>INR</option><option>USD</option></select></td>
               <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
-              <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? 'Send for Approval' : '—'}</td>
+              <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? statusText : '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -289,7 +294,8 @@ const SelfReimbTable: React.FC<{
 const ThirdPartyTable: React.FC<{
   charge: ChargeData;
   onUpdate: (c: ChargeData) => void;
-}> = ({ charge, onUpdate }) => {
+  statusText: string;
+}> = ({ charge, onUpdate, statusText }) => {
   const updateBL = (idx: number, field: keyof BLRow, value: string) => {
     const row = charge.blRows[idx];
     const updated = { ...row, [field]: value };
@@ -380,7 +386,7 @@ const ThirdPartyTable: React.FC<{
                 </td>
                 <td style={{ ...tdStyle, fontSize: 10, color: '#666' }}>{row.tpVendorName || '—'}</td>
                 <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
-                <td style={{ ...tdStyle, color: row.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{row.selected ? 'Send for Approval' : '—'}</td>
+                <td style={{ ...tdStyle, color: row.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{row.selected ? statusText : '—'}</td>
               </tr>
             );
           })}
@@ -414,6 +420,8 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
   );
   const [phase, setPhase] = useState<'selection' | 'detail'>(savedDraft?.phase || 'selection');
   const [chargeData, setChargeData] = useState<ChargeData[]>(savedDraft?.chargeData || []);
+  const [wasSentForApproval, setWasSentForApproval] = useState(savedDraft?.sentForApproval || false);
+  const [activeChargeTab, setActiveChargeTab] = useState<ChargeType>('Incidental');
 
   // Build charge data from selections
   const buildChargeData = () => {
@@ -467,7 +475,7 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
   }, [chargeData]);
 
   const handleSaveDraft = () => {
-    onSaveDraft({ selectedCharges, chargeData, phase });
+    onSaveDraft({ selectedCharges, chargeData, phase, sentForApproval: wasSentForApproval });
   };
 
   const handleCancel = () => {
@@ -518,9 +526,28 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
 
   // Detail phase
   const typeLabels: Record<ChargeType, { label: string; color: string; bg: string }> = {
-    'Incidental': { label: 'A. Incidental Charges', color: '#E65100', bg: '#FFF3E0' },
-    'Self-Reimbursement': { label: 'B. Self-Reimbursement Charges', color: '#1565C0', bg: '#E3F2FD' },
-    'Third-Party Reimbursement': { label: 'C. Third-Party Reimbursement Charges', color: '#2E7D32', bg: '#E8F5E9' },
+    'Incidental': { label: 'Incidental Charges', color: '#E65100', bg: '#FFF3E0' },
+    'Self-Reimbursement': { label: 'Self-Reimbursement Charges', color: '#1565C0', bg: '#E3F2FD' },
+    'Third-Party Reimbursement': { label: 'Third-Party Reimbursement', color: '#2E7D32', bg: '#E8F5E9' },
+  };
+
+  // Available tabs — only types that have charges
+  const availableTabs = (['Incidental', 'Self-Reimbursement', 'Third-Party Reimbursement'] as ChargeType[])
+    .filter(type => grouped[type].length > 0);
+
+  // Ensure active tab is valid
+  const currentTab = availableTabs.includes(activeChargeTab) ? activeChargeTab : availableTabs[0];
+
+  // Status text logic
+  const statusText = wasSentForApproval ? 'Sent for Approval' : 'Selected for Approval';
+
+  const activeCharges = grouped[currentTab] || [];
+
+  const handleSendForApproval = () => {
+    setWasSentForApproval(true);
+    // Save draft with sentForApproval flag before sending
+    onSaveDraft({ selectedCharges, chargeData, phase, sentForApproval: true });
+    onSendForApproval();
   };
 
   return (
@@ -537,35 +564,45 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
             background: '#fff', color: '#006EC3', fontSize: 13, cursor: 'pointer',
             fontWeight: 600, fontFamily: 'inherit',
           }}>Save as Draft</button>
-          <button className="btn-approve" onClick={onSendForApproval}>Send for Approval</button>
+          <button className="btn-approve" onClick={handleSendForApproval}>Send for Approval</button>
         </div>
       </div>
 
-      <div className="task-detail-body" style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
-        {(['Incidental', 'Self-Reimbursement', 'Third-Party Reimbursement'] as ChargeType[]).map(type => {
-          const charges = grouped[type];
-          if (charges.length === 0) return null;
+      {/* Charge type tabs */}
+      <div style={{
+        display: 'flex', alignItems: 'center', padding: '0 16px',
+        borderBottom: '1px solid #e8e8e8', background: '#FAFAFA',
+      }}>
+        {availableTabs.map(type => {
           const style = typeLabels[type];
           return (
-            <div key={type} style={{ marginBottom: 24 }}>
-              <div style={{
-                padding: '6px 12px', background: style.bg, color: style.color,
-                fontWeight: 700, fontSize: 13, borderRadius: '4px 4px 0 0',
-                borderBottom: `2px solid ${style.color}`,
-              }}>
-                {style.label}
-              </div>
-              <div style={{ padding: '12px 0' }}>
-                {charges.map((c, idx) => {
-                  const globalIdx = chargeData.indexOf(c);
-                  if (type === 'Incidental') return <IncidentalTable key={idx} charge={c} onUpdate={u => updateChargeData(globalIdx, u)} />;
-                  if (type === 'Self-Reimbursement') return <SelfReimbTable key={idx} charge={c} onUpdate={u => updateChargeData(globalIdx, u)} />;
-                  return <ThirdPartyTable key={idx} charge={c} onUpdate={u => updateChargeData(globalIdx, u)} />;
-                })}
-              </div>
-            </div>
+            <button
+              key={type}
+              onClick={() => setActiveChargeTab(type)}
+              style={{
+                padding: '10px 16px', fontSize: 12, fontFamily: 'inherit',
+                background: 'none', border: 'none', cursor: 'pointer',
+                borderBottom: currentTab === type ? `3px solid ${style.color}` : '3px solid transparent',
+                color: currentTab === type ? style.color : '#666',
+                fontWeight: currentTab === type ? 700 : 400,
+              }}
+            >
+              {style.label}
+            </button>
           );
         })}
+      </div>
+
+      <div className="task-detail-body" style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'auto' }}>
+        {/* Active tab content */}
+        <div style={{ padding: '12px 0' }}>
+          {activeCharges.map((c, idx) => {
+            const globalIdx = chargeData.indexOf(c);
+            if (currentTab === 'Incidental') return <IncidentalTable key={idx} charge={c} onUpdate={u => updateChargeData(globalIdx, u)} statusText={statusText} />;
+            if (currentTab === 'Self-Reimbursement') return <SelfReimbTable key={idx} charge={c} onUpdate={u => updateChargeData(globalIdx, u)} statusText={statusText} />;
+            return <ThirdPartyTable key={idx} charge={c} onUpdate={u => updateChargeData(globalIdx, u)} statusText={statusText} />;
+          })}
+        </div>
 
         {/* Grand Total */}
         <div style={{
