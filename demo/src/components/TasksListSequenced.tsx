@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import type { ResolvedTask, ShipmentMode } from '../data/taskSequence';
 import { TASK_FIELDS } from '../data/taskFields';
 import TaskDetail from './TaskDetail';
+import GPOTaskView from './GPOTaskView';
+import type { GPOResult } from './GPOTaskView';
 
 const milestones = ['Drafts', 'Origin', 'In Transit', 'Destination'];
 
@@ -54,6 +56,8 @@ const TasksListSequenced: React.FC<Props> = ({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [vendorSelections, setVendorSelections] = useState<string[]>([]); // vendors chosen in Vendor Selection task
+  const [gpoResult, setGpoResult] = useState<GPOResult | null>(null);
 
   // Reset on shipment change
   useEffect(() => {
@@ -62,6 +66,8 @@ const TasksListSequenced: React.FC<Props> = ({
     setCollapsed({});
     setIsProcessing(false);
     setToastMessage(null);
+    setVendorSelections([]);
+    setGpoResult(null);
   }, [shipmentId]);
 
   // Auto-dismiss toast after 3 seconds
@@ -133,10 +139,60 @@ const TasksListSequenced: React.FC<Props> = ({
     processTaskCompletion(taskKey, true);
   };
 
+  // Track vendor selections from Vendor Selection task submit
+  const handleVendorTaskSubmit = (vendors: string[]) => {
+    setVendorSelections(vendors);
+    handleSubmitTask(openTaskKey!);
+  };
+
+  // Handle GPO submit
+  const handleGPOSubmit = (result: GPOResult) => {
+    setGpoResult(result);
+    // If no deviation, skip L1 Deviation task — mark both GPO and L1 as done
+    if (result.totalDeviation === 0) {
+      const l1Task = allTasks.find(t => t.name === 'Approval of L1 Deviation');
+      if (l1Task) {
+        // Mark L1 as Done too since no deviation
+        setStatuses(prev => ({ ...prev, [l1Task.taskKey]: 'Done' }));
+      }
+    }
+    handleSubmitTask(openTaskKey!);
+  };
+
+  // Handle L1 Approval submit
+  const handleL1Submit = () => {
+    handleSubmitTask(openTaskKey!);
+  };
+
   // Open task detail
   if (openTaskKey && !isProcessing) {
     const task = allTasks.find(t => t.taskKey === openTaskKey);
     if (task) {
+      // GPO Task — show bid cards
+      if (task.name === 'Run Global Plan Optimizer') {
+        return (
+          <GPOTaskView
+            selectedVendors={vendorSelections}
+            onClose={() => setOpenTaskKey(null)}
+            onSubmit={handleGPOSubmit}
+          />
+        );
+      }
+
+      // L1 Deviation Approval — show bid cards read-only
+      if (task.name === 'Approval of L1 Deviation') {
+        return (
+          <GPOTaskView
+            selectedVendors={vendorSelections}
+            onClose={() => setOpenTaskKey(null)}
+            onSubmit={handleL1Submit}
+            readOnly={true}
+            previousResult={gpoResult}
+          />
+        );
+      }
+
+      // Regular task detail
       const fieldDef = TASK_FIELDS[task.name];
       const taskObj = {
         id: task.seq,
@@ -160,6 +216,7 @@ const TasksListSequenced: React.FC<Props> = ({
           onClose={() => setOpenTaskKey(null)}
           onVendorSelected={onVendorSelected}
           onSubmit={() => handleSubmitTask(openTaskKey)}
+          onVendorTaskSubmit={task.name === 'Vendor Selection' ? handleVendorTaskSubmit : undefined}
         />
       );
     }

@@ -159,6 +159,7 @@ interface Props {
   onClose: () => void;
   onVendorSelected?: (vendor: 'CFS' | 'ICD' | null) => void;
   onSubmit?: () => void;
+  onVendorTaskSubmit?: (vendors: string[]) => void;
 }
 
 // Map shipment mode codes to display values for the Mode dropdown
@@ -166,7 +167,7 @@ const MODE_DISPLAY: Record<string, string> = {
   FCL: 'FCL', LCL: 'LCL', AIR: 'AIR', BB: 'BREAK BULK (MB)', BULK: 'BULK (MR)',
 };
 
-const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit }) => {
+const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit, onVendorTaskSubmit }) => {
   const [markDone, setMarkDone] = useState(true);
   const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
   const allF = task.fields || [];
@@ -231,7 +232,13 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
                 <input type="checkbox" checked={markDone} onChange={e => setMarkDone(e.target.checked)} />
                 Mark this task as done automatically?
               </label>
-              <button className="btn-submit" onClick={onSubmit}>Submit</button>
+              <button className="btn-submit" onClick={() => {
+                if (onVendorTaskSubmit && isVendorSelectionTask) {
+                  onVendorTaskSubmit(selectedVendors);
+                } else if (onSubmit) {
+                  onSubmit();
+                }
+              }}>Submit</button>
             </>
           )}
         </div>
