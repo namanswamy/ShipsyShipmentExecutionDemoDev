@@ -286,7 +286,7 @@ export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[];
   ] },
 
   'Confirm CFS Vendor': { fields: [
-    { label: 'CFS Vendors', value: '', type: 'dropdown', req: true, opts: ['Balmer Lawrie CFS', 'Allcargo CFS', 'Gateway Distriparks CFS', 'Continental Warehousing CFS', 'Jawaharlal Nehru CFS', 'APM Terminals CFS'] },
+    { label: 'CFS Vendors', value: '', type: 'addmore', req: true, opts: ['CFS 1', 'CFS 2', 'CFS 3', 'CFS 4', 'CFS 5', 'CFS 6', 'CFS 7', 'CFS 8', 'CFS 9', 'CFS 10'] },
   ] },
 
   'CFS Gate in Date & Time': { fields: [
@@ -324,7 +324,7 @@ export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[];
   ] },
 
   'Transporter Confirmation': { fields: [
-    { label: 'Transporter', value: '', type: 'dropdown', req: true, opts: ['TCI Freight', 'Gati KWE', 'Safexpress', 'Rivigo', 'Delhivery Freight', 'VRL Logistics', 'Blue Dart Express', 'XpressBees Freight'] },
+    { label: 'Transporter', value: '', type: 'addmore', req: true, opts: ['Transporter 1', 'Transporter 2', 'Transporter 3', 'Transporter 4', 'Transporter 5', 'Transporter 6', 'Transporter 7', 'Transporter 8', 'Transporter 9', 'Transporter 10'] },
   ] },
 
   'Carrier Confirmation': { fields: [
@@ -349,6 +349,6 @@ export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[];
   ] },
 
   'Confirm ICD Vendor': { fields: [
-    { label: 'ICD Vendors', value: '', type: 'dropdown', req: true, opts: ['CONCOR ICD Tughlakabad', 'CONCOR ICD Dadri', 'Allcargo ICD Nagpur', 'Gateway Rail ICD Garhi Harsaru', 'APL Logistics ICD Ahmedabad', 'Hind Terminals ICD Nhava Sheva'] },
+    { label: 'ICD Vendors', value: '', type: 'addmore', req: true, opts: ['ICD 1', 'ICD 2', 'ICD 3', 'ICD 4', 'ICD 5', 'ICD 6', 'ICD 7', 'ICD 8', 'ICD 9', 'ICD 10'] },
   ] },
 };

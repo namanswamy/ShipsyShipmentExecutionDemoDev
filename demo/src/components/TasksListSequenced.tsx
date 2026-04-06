@@ -6,7 +6,7 @@ import GPOTaskView from './GPOTaskView';
 import type { GPOResult } from './GPOTaskView';
 import IncidentalChargesView from './IncidentalChargesView';
 import type { IncidentalDraft } from './IncidentalChargesView';
-import MultiVendorWrapper, { isMultiVendorPersona, getVendorNames } from './MultiVendorWrapper';
+import MultiVendorWrapper, { isMultiVendorPersona, getDefaultVendorNames } from './MultiVendorWrapper';
 
 const milestones = ['Drafts', 'Origin', 'In Transit', 'Destination'];
 
@@ -71,6 +71,8 @@ interface Props {
   setCollapsed: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   multiVendorSubmitted: Record<string, Set<number>>;
   setMultiVendorSubmitted: React.Dispatch<React.SetStateAction<Record<string, Set<number>>>>;
+  confirmedVendors: Record<string, string[]>;
+  setConfirmedVendors: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
 }
 
 const TasksListSequenced: React.FC<Props> = ({
@@ -85,6 +87,7 @@ const TasksListSequenced: React.FC<Props> = ({
   openTaskKey, setOpenTaskKey,
   collapsed, setCollapsed,
   multiVendorSubmitted, setMultiVendorSubmitted,
+  confirmedVendors, setConfirmedVendors,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -171,6 +174,17 @@ const TasksListSequenced: React.FC<Props> = ({
         setIsSpot(fieldValues['Spot / Normal'] === 'Spot');
       }
 
+      // Extract confirmed vendors from CFS/ICD/Transporter confirmation tasks
+      if (task?.name === 'Confirm CFS Vendor' && fieldValues['CFS Vendors']) {
+        setConfirmedVendors(prev => ({ ...prev, 'CFS': fieldValues['CFS Vendors'].split(', ').filter(Boolean) }));
+      }
+      if (task?.name === 'Confirm ICD Vendor' && fieldValues['ICD Vendors']) {
+        setConfirmedVendors(prev => ({ ...prev, 'ICD': fieldValues['ICD Vendors'].split(', ').filter(Boolean) }));
+      }
+      if (task?.name === 'Transporter Confirmation' && fieldValues['Transporter']) {
+        setConfirmedVendors(prev => ({ ...prev, 'Transporter': fieldValues['Transporter'].split(', ').filter(Boolean) }));
+      }
+
       // Extract POL/POD from Select Port Details
       if (task?.name === 'Select Port Details') {
         const pol = fieldValues['Port of Loading'] || '';
@@ -249,7 +263,7 @@ const TasksListSequenced: React.FC<Props> = ({
       // Incidental Charges tasks
       if (INCIDENTAL_TASKS.includes(task.name)) {
         const isMultiVendor = isMultiVendorPersona(task.persona);
-        const vendors = isMultiVendor ? getVendorNames(task.persona) : [task.persona];
+        const vendors = isMultiVendor ? (confirmedVendors[task.persona]?.length ? confirmedVendors[task.persona] : getDefaultVendorNames(task.persona)) : [task.persona];
         const totalVendors = vendors.length;
 
         const incidentalContent = (vendorIdx: number, _vendorName: string) => {
@@ -259,6 +273,7 @@ const TasksListSequenced: React.FC<Props> = ({
             : false;
           return (
             <IncidentalChargesView
+              key={draftKey}
               taskName={task.name}
               onClose={() => setOpenTaskKey(null)}
               onSendForApproval={() => {
@@ -293,16 +308,13 @@ const TasksListSequenced: React.FC<Props> = ({
                 <div className="task-detail-header-left">
                   <button className="task-detail-close" onClick={() => setOpenTaskKey(null)}>&#10005;</button>
                   <span className="task-detail-title">{task.name}</span>
-                  <span className={`task-detail-code ${task.taskKey === 'TBD' ? 'tbd' : 'existing'}`}>
-                    {task.taskKey}
-                  </span>
                   <span className="task-detail-deadline-wrap">
                     <span className="task-detail-deadline-label">Deadline:</span>
                     <span className="task-detail-deadline-value">20 Mar 2026</span>
                   </span>
                 </div>
               </div>
-              <MultiVendorWrapper persona={task.persona} submittedIndices={submittedSet}>
+              <MultiVendorWrapper persona={task.persona} vendorNames={confirmedVendors[task.persona] || []} submittedIndices={submittedSet}>
                 {(vendorIdx, vendorName) => incidentalContent(vendorIdx, vendorName)}
               </MultiVendorWrapper>
             </div>
@@ -343,7 +355,7 @@ const TasksListSequenced: React.FC<Props> = ({
 
       // Regular task detail
       const isMultiVendor = isMultiVendorPersona(task.persona);
-      const vendors = isMultiVendor ? getVendorNames(task.persona) : [task.assignee === 'Ops' ? 'Reliance' : task.assignee];
+      const vendors = isMultiVendor ? (confirmedVendors[task.persona]?.length ? confirmedVendors[task.persona] : getDefaultVendorNames(task.persona)) : [task.assignee === 'Ops' ? 'Reliance' : task.assignee];
       const totalVendors = vendors.length;
 
       const regularContent = (vendorIdx: number, vendorName: string) => {
@@ -368,6 +380,7 @@ const TasksListSequenced: React.FC<Props> = ({
           : false;
         return (
           <TaskDetail
+            key={fieldKey}
             task={taskObj}
             incoterm={incoterm}
             shipmentMode={shipmentMode}
@@ -399,16 +412,13 @@ const TasksListSequenced: React.FC<Props> = ({
               <div className="task-detail-header-left">
                 <button className="task-detail-close" onClick={() => setOpenTaskKey(null)}>&#10005;</button>
                 <span className="task-detail-title">{task.name}</span>
-                <span className={`task-detail-code ${task.taskKey === 'TBD' ? 'tbd' : 'existing'}`}>
-                  {task.taskKey}
-                </span>
                 <span className="task-detail-deadline-wrap">
                   <span className="task-detail-deadline-label">Deadline:</span>
                   <span className="task-detail-deadline-value">20 Mar 2026</span>
                 </span>
               </div>
             </div>
-            <MultiVendorWrapper persona={task.persona} submittedIndices={submittedSet}>
+            <MultiVendorWrapper persona={task.persona} vendorNames={confirmedVendors[task.persona] || []} submittedIndices={submittedSet}>
               {(vendorIdx, vendorName) => regularContent(vendorIdx, vendorName)}
             </MultiVendorWrapper>
           </div>

@@ -79,8 +79,10 @@ export const TASK_SEQUENCE: SequenceEntry[] = [
     taskByMode: { FCL: 'FF Incidental Events', LCL: 'FF Incidental Events', AIR: 'FF Incidental Events', BB: 'FF Incidental Events', BULK: 'FF Incidental Events' } },
   { seq: 27, assignee: 'CHA', milestone: 'Destination', persona: 'CHA',
     taskByMode: { FCL: 'CHA Incidental Events', LCL: 'CHA Incidental Events', AIR: 'CHA Incidental Events', BB: 'CHA Incidental Events', BULK: 'CHA Incidental Events' } },
-  { seq: 28, assignee: 'Ops', milestone: 'Destination', persona: 'Shipper',
+  { seq: 28, assignee: 'Ops', milestone: 'Destination', persona: 'Shipper', vendorBlock: 'CFS',
     taskByMode: { FCL: 'Confirm CFS Vendor', LCL: 'Confirm CFS Vendor', AIR: 'Confirm CFS Vendor', BB: 'Confirm CFS Vendor', BULK: 'Confirm CFS Vendor' } },
+  { seq: 28, assignee: 'Ops', milestone: 'Destination', persona: 'Shipper', vendorBlock: 'ICD',
+    taskByMode: { FCL: 'Confirm ICD Vendor', LCL: 'Confirm ICD Vendor', AIR: 'Confirm ICD Vendor', BB: 'Confirm ICD Vendor', BULK: 'Confirm ICD Vendor' } },
 
   // CFS block
   { seq: 29, assignee: 'CFS', milestone: 'Destination', persona: 'CFS', vendorBlock: 'CFS',

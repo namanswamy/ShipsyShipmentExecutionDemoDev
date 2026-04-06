@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
 
-// Demo vendor names per persona type
-const VENDOR_NAMES: Record<string, string[]> = {
-  'Transporter': ['Transporter - 1', 'Transporter - 2', 'Transporter - 3'],
-  'CFS': ['CFS - 1', 'CFS - 2', 'CFS - 3'],
-  'ICD': ['ICD - 1', 'ICD - 2', 'ICD - 3'],
-  'Surveyor': ['Surveyor - 1', 'Surveyor - 2', 'Surveyor - 3'],
-};
-
 interface Props {
-  persona: string; // 'Transporter' | 'CFS' | 'ICD'
+  persona: string;
+  vendorNames: string[]; // dynamic list from confirmation task
   children: (vendorIndex: number, vendorName: string) => React.ReactNode;
   submittedIndices?: Set<number>;
 }
@@ -21,13 +14,28 @@ export function isMultiVendorPersona(persona: string): boolean {
   return MULTI_VENDOR_PERSONAS.includes(persona);
 }
 
-export function getVendorNames(persona: string): string[] {
-  return VENDOR_NAMES[persona] || [`${persona} 1`, `${persona} 2`, `${persona} 3`];
+// Default vendor names if none selected yet
+export function getDefaultVendorNames(persona: string): string[] {
+  return [`${persona} 1`, `${persona} 2`, `${persona} 3`];
 }
 
-const MultiVendorWrapper: React.FC<Props> = ({ persona, children, submittedIndices }) => {
-  const vendors = getVendorNames(persona);
+// Map confirmation task names to persona types
+export const CONFIRMATION_TASK_MAP: Record<string, string> = {
+  'Confirm CFS Vendor': 'CFS',
+  'Confirm ICD Vendor': 'ICD',
+  'Transporter Confirmation': 'Transporter',
+};
+
+// Field label used in each confirmation task's addmore
+export const CONFIRMATION_FIELD_MAP: Record<string, string> = {
+  'Confirm CFS Vendor': 'CFS Vendors',
+  'Confirm ICD Vendor': 'ICD Vendors',
+  'Transporter Confirmation': 'Transporter',
+};
+
+const MultiVendorWrapper: React.FC<Props> = ({ persona, vendorNames, children, submittedIndices }) => {
   const [activeVendorIdx, setActiveVendorIdx] = useState(0);
+  const vendors = vendorNames.length > 0 ? vendorNames : getDefaultVendorNames(persona);
 
   return (
     <div>

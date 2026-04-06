@@ -55,6 +55,7 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
   const [openTaskKey, setOpenTaskKey] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [multiVendorSubmitted, setMultiVendorSubmitted] = useState<Record<string, Set<number>>>({});
+  const [confirmedVendors, setConfirmedVendors] = useState<Record<string, string[]>>({});
 
   const mode = (shipmentMode === 'BB' || shipmentMode === 'BULK') ? shipmentMode as ShipmentMode
     : shipmentMode === 'Break Bulk' ? 'BB' as ShipmentMode
@@ -87,6 +88,7 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
     setSavedFields({});
     setIncidentalDrafts({});
     setMultiVendorSubmitted({});
+    setConfirmedVendors({});
 
     if (selectedShipmentId === 'DEMO-READY') {
       setStatuses(getDemoReadyStatuses());
@@ -94,6 +96,7 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
       setGpoResult(null);
       setPortDetails({ pol: 'SHANGHAI', pod: 'NHAVA SHEVA' });
       setIsSpot(false);
+      setConfirmedVendors({ 'Transporter': ['Transporter 1', 'Transporter 2'] });
     } else {
       setStatuses({});
       setVendorSelections([]);
@@ -229,6 +232,8 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
           setCollapsed={setCollapsed}
           multiVendorSubmitted={multiVendorSubmitted}
           setMultiVendorSubmitted={setMultiVendorSubmitted}
+          confirmedVendors={confirmedVendors}
+          setConfirmedVendors={setConfirmedVendors}
         />
       )}
     </div>

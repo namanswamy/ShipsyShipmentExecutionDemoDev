@@ -96,26 +96,56 @@ const VendorAddMoreField: React.FC<VendorAddMoreProps> = ({ f, onSelectionChange
 };
 
 // Generic AddMore (for non-vendor tasks like Incidental Charges)
-const AddMoreField: React.FC<{ f: Field }> = ({ f }) => {
-  const [rows, setRows] = useState(['']);
+const AddMoreField: React.FC<{ f: Field; value?: string; onChange?: (val: string) => void }> = ({ f, value, onChange }) => {
+  const initRows = value ? value.split(', ').filter(Boolean) : [''];
+  const [rows, setRows] = useState<string[]>(initRows);
+  const allOpts = f.opts || [];
+
+  const getAvailableOpts = (currentIdx: number) => {
+    const othersSelected = rows.filter((_, i) => i !== currentIdx).filter(v => v !== '');
+    return allOpts.filter(o => !othersSelected.includes(o));
+  };
+
+  const handleChange = (idx: number, val: string) => {
+    const updated = [...rows];
+    updated[idx] = val;
+    setRows(updated);
+    onChange?.(updated.filter(v => v !== '').join(', '));
+  };
+
+  const handleRemove = (idx: number) => {
+    const updated = rows.filter((_, i) => i !== idx);
+    setRows(updated);
+    onChange?.(updated.filter(v => v !== '').join(', '));
+  };
+
+  const handleAdd = () => {
+    setRows([...rows, '']);
+  };
+
+  const selectedCount = rows.filter(v => v !== '').length;
+  const hasMore = selectedCount < allOpts.length;
+
   return (
     <div>
-      {rows.map((_, i) => (
+      {rows.map((val, i) => (
         <div key={i} className="addmore-row">
-          <select className="field-select" style={{ flex: 1 }}>
+          <select className="field-select" style={{ flex: 1 }} value={val} onChange={e => handleChange(i, e.target.value)}>
             <option value="">Select...</option>
-            {(f.opts || []).map(o => <option key={o} value={o}>{o}</option>)}
+            {getAvailableOpts(i).map(o => <option key={o} value={o}>{o}</option>)}
           </select>
           {rows.length > 1 && (
-            <button className="addmore-remove" onClick={() => setRows(rows.filter((__, j) => j !== i))}>
+            <button className="addmore-remove" onClick={() => handleRemove(i)}>
               &#10005;
             </button>
           )}
         </div>
       ))}
-      <button className="addmore-add" onClick={() => setRows([...rows, ''])}>
-        <span style={{ fontSize: 16, lineHeight: '1' }}>+</span> Add More
-      </button>
+      {hasMore && (
+        <button className="addmore-add" onClick={handleAdd}>
+          <span style={{ fontSize: 16, lineHeight: '1' }}>+</span> Add More
+        </button>
+      )}
     </div>
   );
 };
@@ -124,7 +154,7 @@ const FieldInput: React.FC<{ f: Field; value?: string; onChange?: (val: string) 
   const handleChange = (val: string) => onChange?.(val);
   if (f.type === 'auto') return <div className="field-auto">{f.value || 'Auto-populated'}</div>;
   if (f.type === 'upload') return <button className="field-upload-btn">&#11014; Choose file</button>;
-  if (f.type === 'addmore') return <AddMoreField f={f} />;
+  if (f.type === 'addmore') return <AddMoreField f={f} value={value} onChange={onChange} />;
   if (f.type === 'dropdown' || f.type === 'multiselect') {
     return (
       <select className="field-select" value={value ?? f.defaultVal ?? ''} onChange={e => handleChange(e.target.value)}>
@@ -229,9 +259,6 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
             <button className="task-detail-close" onClick={onClose}>&#10005;</button>
             <span className="task-detail-title">{task.name}</span>
             <span className="task-detail-edit">&#9998;</span>
-            <span className={`task-detail-code ${task.code === 'TBD' ? 'tbd' : 'existing'}`}>
-              {task.code}
-            </span>
             <span className="task-detail-deadline-wrap">
               <span className="task-detail-deadline-label">Deadline:</span>
               <span className="task-detail-deadline-value">20 Mar 2026</span>
