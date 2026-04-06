@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { ChargeType, ChargeLevel, BLRow, ContainerRow } from '../data/incidentalCharges';
 import {
-  CHARGE_LIST, CHARGE_TYPE_MAP, CHARGE_LEVEL_MAP, createDemoBLRows, createSingleBLRow, createDemoContainerRows,
+  CHARGE_LIST, CHARGE_TYPE_MAP, CHARGE_LEVEL_MAP, createSingleBLRow, createDemoContainerRows,
   INCIDENTAL_RATES, TP_VENDOR_OPTIONS,
 } from '../data/incidentalCharges';
 
