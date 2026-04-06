@@ -14,6 +14,12 @@ function App() {
   const [activeMilestone, setActiveMilestone] = useState('ALL');
   const [showMenu, setShowMenu] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'shipper' | 'approver'>('shipper');
+  // Track spot/normal overrides per shipment (set dynamically when user selects in task 1)
+  const [spotNormalMap, setSpotNormalMap] = useState<Record<string, 'Spot' | 'Normal'>>({});
+
+  const handleSpotNormalChange = (value: 'Spot' | 'Normal') => {
+    setSpotNormalMap(prev => ({ ...prev, [selectedShipmentId]: value }));
+  };
 
   const handleNavigate = (screen: 'shipper' | 'approver') => {
     setCurrentScreen(screen);
@@ -88,11 +94,12 @@ function App() {
               data={s}
               selected={selectedShipmentId === s.id}
               onClick={() => setSelectedShipmentId(s.id)}
+              spotNormalOverride={spotNormalMap[s.id] || null}
             />
           ))}
         </div>
         <div className="shipment-actions-panel">
-          <ActionsPanel selectedShipmentId={selectedShipmentId} incoterm={selectedShipment?.incoterm || ''} shipmentMode={selectedShipment?.mode || 'FCL'} />
+          <ActionsPanel selectedShipmentId={selectedShipmentId} incoterm={selectedShipment?.incoterm || ''} shipmentMode={selectedShipment?.mode || 'FCL'} onSpotNormalChange={handleSpotNormalChange} />
         </div>
       </div>
 

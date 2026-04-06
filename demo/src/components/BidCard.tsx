@@ -11,9 +11,10 @@ interface Props {
   readOnly?: boolean;
   dimmed?: boolean;
   onViewDetails?: () => void;
+  isSpot?: boolean;
 }
 
-const BidCard: React.FC<Props> = ({ bid, selected, onClick, readOnly, dimmed, onViewDetails }) => {
+const BidCard: React.FC<Props> = ({ bid, selected, onClick, readOnly, dimmed, onViewDetails, isSpot }) => {
   const rankColors: Record<number, { bg: string; c: string }> = {
     1: { bg: '#E8F5E9', c: '#2E7D32' },
     2: { bg: '#FFF3E0', c: '#E65100' },
@@ -22,17 +23,38 @@ const BidCard: React.FC<Props> = ({ bid, selected, onClick, readOnly, dimmed, on
   const rankStyle = rankColors[bid.rank] || rankColors[3];
   const showPol = !podOnlyVendors.includes(bid.vendorType) && bid.pol;
 
+  // Color scheme based on Spot/Normal and readOnly (L1 Deviation)
+  const isL1 = readOnly;
+  let cardBg: string;
+  let cardBorder: string;
+  let bottomBarBg: string;
+  let amountBg: string;
+
+  if (isSpot) {
+    // Spot: warm orange tones
+    cardBg = isL1 ? '#FFF9F2' : '#FFF5EB';
+    cardBorder = selected ? '2px solid #E65100' : (isL1 ? '1px solid #FFCC80' : '1px solid #FFB74D');
+    bottomBarBg = isL1 ? '#FFF5EB' : '#FFF3E0';
+    amountBg = isL1 ? '#FFF0E0' : '#FFE0B2';
+  } else {
+    // Normal: grey tones
+    cardBg = isL1 ? '#FBFBFB' : '#F8F8F8';
+    cardBorder = selected ? '2px solid #006EC3' : (isL1 ? '1px solid #E0E0E0' : '1px solid #D0D0D0');
+    bottomBarBg = isL1 ? '#F5F5F5' : '#F0F0F0';
+    amountBg = isL1 ? '#F0F0F0' : '#EEEEEE';
+  }
+
   return (
     <div
       onClick={!readOnly ? onClick : undefined}
       style={{
-        border: selected ? '2px solid #006EC3' : '1px solid #e0e0e0',
+        border: cardBorder,
         borderRadius: 6,
         cursor: readOnly ? 'default' : 'pointer',
         opacity: dimmed ? 0.45 : 1,
         marginBottom: 10,
-        background: '#fff',
-        transition: 'border-color .15s, opacity .15s',
+        background: cardBg,
+        transition: 'border-color .15s, opacity .15s, background .15s',
         overflow: 'hidden',
       }}
     >
@@ -77,7 +99,7 @@ const BidCard: React.FC<Props> = ({ bid, selected, onClick, readOnly, dimmed, on
 
         {/* Amount */}
         <div style={{
-          marginLeft: 'auto', background: '#FFF8E1', borderRadius: 4,
+          marginLeft: 'auto', background: amountBg, borderRadius: 4,
           padding: '8px 16px', textAlign: 'right', minWidth: 130,
         }}>
           <div style={{ fontWeight: 700, fontSize: 17, color: '#333' }}>
@@ -90,7 +112,7 @@ const BidCard: React.FC<Props> = ({ bid, selected, onClick, readOnly, dimmed, on
       {/* Bottom bar */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '5px 20px',
-        background: '#FAFAFA', borderTop: '1px solid #f0f0f0', fontSize: 11,
+        background: bottomBarBg, borderTop: isSpot ? '1px solid #FFE0B2' : '1px solid #E8E8E8', fontSize: 11,
         color: '#666', flexWrap: 'wrap',
       }}>
         <span style={{
@@ -115,8 +137,18 @@ const BidCard: React.FC<Props> = ({ bid, selected, onClick, readOnly, dimmed, on
       {/* Selection indicator */}
       {selected && !readOnly && (
         <div style={{
-          background: '#006EC3', color: '#fff', textAlign: 'center',
+          background: isSpot ? '#E65100' : '#006EC3', color: '#fff', textAlign: 'center',
           padding: '3px 0', fontSize: 11, fontWeight: 600,
+        }}>
+          &#10003; Selected
+        </div>
+      )}
+      {selected && readOnly && (
+        <div style={{
+          background: isSpot ? '#FFF3E0' : '#E3F2FD',
+          color: isSpot ? '#E65100' : '#1565C0',
+          textAlign: 'center', padding: '3px 0', fontSize: 11, fontWeight: 600,
+          borderTop: isSpot ? '1px solid #FFE0B2' : '1px solid #BBDEFB',
         }}>
           &#10003; Selected
         </div>

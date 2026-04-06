@@ -333,6 +333,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
             readOnly={readOnly}
             dimmed={readOnly && selectedBids[activeVendorTab] !== bid.id}
             onViewDetails={() => setViewDetailBid(bid)}
+            isSpot={isSpot}
           />
         ))}
 

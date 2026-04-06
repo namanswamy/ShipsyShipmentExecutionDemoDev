@@ -1,15 +1,17 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { personas } from '../data/tasks';
+import { personas, shipments } from '../data/tasks';
 import type { ShipmentMode } from '../data/taskSequence';
 import { resolveTasksForShipment } from '../data/taskSequence';
 import TasksListSequenced from './TasksListSequenced';
 import type { GPOResult } from './GPOTaskView';
 import type { IncidentalDraft } from './IncidentalChargesView';
+import { createDemo2Draft, createDemo3Draft, createDemo4Draft } from '../data/incidentalCharges';
 
 interface Props {
   selectedShipmentId: string | null;
   incoterm: string;
   shipmentMode: string;
+  onSpotNormalChange?: (value: 'Spot' | 'Normal') => void;
 }
 
 const actionTabs = [
@@ -36,7 +38,7 @@ const MoreIcon = () => (
   </svg>
 );
 
-const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentMode }) => {
+const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentMode, onSpotNormalChange }) => {
   const [activeTab, setActiveTab] = useState('tasks');
   const [activePersona, setActivePersona] = useState('Shipper');
   const [showActivity, setShowActivity] = useState(false);
@@ -66,15 +68,6 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
     [mode, incoterm, selectedVendor]
   );
 
-  // Pre-populated statuses for DEMO-READY shipment
-  const getDemoReadyStatuses = (): Record<string, string> => {
-    const doneStatuses: Record<string, string> = {};
-    allResolvedTasks.forEach(t => {
-      if (t.seq <= 25) doneStatuses[t.taskKey] = 'Done';
-    });
-    return doneStatuses;
-  };
-
   // Reset everything when shipment changes
   useEffect(() => {
     setActivePersona('Shipper');
@@ -82,7 +75,8 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
     setShowActivity(false);
     setShowChat(false);
     setSelectedVendor(null);
-    setVisiblePersonaIds(['Shipper']);
+    // Don't reset visiblePersonaIds here — let TasksListSequenced recalculate it
+    // from the new statuses to avoid race conditions
     setOpenTaskKey(null);
     setCollapsed({});
     setSavedFields({});
@@ -90,19 +84,55 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
     setMultiVendorSubmitted({});
     setConfirmedVendors({});
 
-    if (selectedShipmentId === 'DEMO-READY') {
-      setStatuses(getDemoReadyStatuses());
+    const isDemoIncidental = selectedShipmentId?.startsWith('DEMO-INCIDENTAL-');
+    if (isDemoIncidental) {
+      // Resolve tasks fresh (not from stale memo) to avoid race conditions
+      const freshTasks = resolveTasksForShipment(mode, incoterm, null);
+      const demoStatuses: Record<string, string> = {};
+      freshTasks.forEach(t => {
+        if (t.seq <= 25) demoStatuses[t.taskKey] = 'Done';
+      });
+
       setVendorSelections(['Freight Forwarder', 'CHA', 'Transporter']);
       setGpoResult(null);
       setPortDetails({ pol: 'SHANGHAI', pod: 'NHAVA SHEVA' });
       setIsSpot(false);
       setConfirmedVendors({ 'Transporter': ['Transporter 1', 'Transporter 2'] });
+
+      // Find the FF Incidental Events task key to set demo-specific states
+      const ffIncidentalTask = freshTasks.find(t => t.name === 'FF Incidental Events');
+      const taskKey = ffIncidentalTask?.taskKey || '';
+
+      if (selectedShipmentId === 'DEMO-INCIDENTAL-2' && taskKey) {
+        setStatuses({ ...demoStatuses, [taskKey]: 'Rework Required' });
+        setIncidentalDrafts({ [taskKey]: createDemo2Draft() as IncidentalDraft });
+      } else if (selectedShipmentId === 'DEMO-INCIDENTAL-3' && taskKey) {
+        setStatuses({ ...demoStatuses, [taskKey]: 'Not Approved' });
+        setIncidentalDrafts({ [taskKey]: createDemo3Draft() as IncidentalDraft });
+      } else if (selectedShipmentId === 'DEMO-INCIDENTAL-4' && taskKey) {
+        setStatuses({ ...demoStatuses, [taskKey]: 'Approved' });
+        setIncidentalDrafts({ [taskKey]: createDemo4Draft() as IncidentalDraft });
+      } else {
+        setStatuses(demoStatuses);
+      }
     } else {
-      setStatuses({});
+      // Check if shipment has pre-configured spot/normal
+      const shipmentData = shipments.find(s => s.id === selectedShipmentId);
+      if (shipmentData?.spotNormal) {
+        const isSpotVal = shipmentData.spotNormal === 'Spot';
+        setIsSpot(isSpotVal);
+        // Task 1 is already done for these shipments
+        const firstTask = allResolvedTasks.find(t => t.seq === 1);
+        if (firstTask) {
+          setStatuses({ [firstTask.taskKey]: 'Done' });
+        }
+      } else {
+        setStatuses({});
+        setIsSpot(false);
+      }
       setVendorSelections([]);
       setGpoResult(null);
       setPortDetails({ pol: '', pod: '' });
-      setIsSpot(false);
     }
   }, [selectedShipmentId]);
 
@@ -234,6 +264,7 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
           setMultiVendorSubmitted={setMultiVendorSubmitted}
           confirmedVendors={confirmedVendors}
           setConfirmedVendors={setConfirmedVendors}
+          onSpotNormalChange={onSpotNormalChange}
         />
       )}
     </div>

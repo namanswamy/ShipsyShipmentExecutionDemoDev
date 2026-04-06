@@ -4,10 +4,12 @@ import React, { useState, useMemo } from 'react';
 // Types
 // ════════════════════════════════════════════════════
 
+type ChargeLevelType = 'BL' | 'Container';
+
 interface ChargeLineItem {
   id: string;
   chargeDesc: string;
-  chargeLevel: 'BL' | 'Container';
+  chargeLevel: ChargeLevelType;
   blNo: string;
   blDate: string;
   containerNo: string;

@@ -33,12 +33,12 @@ const ModeIconSvg: React.FC<{ mode: string }> = ({ mode }) => {
       <rect x="3" y="5" width="18" height="12" rx="1"/><polyline points="3 5 12 1 21 5"/>
     </svg>
   );
-  if (mode === 'AIR') return (
+  if (mode === 'AIR' || mode === 'Air') return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.5">
       <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/>
     </svg>
   );
-  // BB / BULK
+  // Break Bulk / BB / BULK
   return (
     <svg width="14" height="12" viewBox="0 0 24 18" fill="none" stroke="#333" strokeWidth="1.5">
       <rect x="1" y="3" width="22" height="12" rx="1"/><line x1="12" y1="3" x2="12" y2="15"/>
@@ -50,15 +50,21 @@ interface Props {
   data: ShipmentData;
   selected: boolean;
   onClick: () => void;
+  spotNormalOverride?: 'Spot' | 'Normal' | null;
 }
 
-const ShipmentCard: React.FC<Props> = ({ data, selected, onClick }) => {
+const ShipmentCard: React.FC<Props> = ({ data, selected, onClick, spotNormalOverride }) => {
   const alerts: string[] = [];
   if (data.tasksDueTodayCount > 0) alerts.push(`${data.tasksDueTodayCount} Task(s) Due Today`);
   if (data.tasksOverdueCount > 0) alerts.push(`${data.tasksOverdueCount} Task(s) Overdue`);
 
+  // Determine spot/normal: override from live state takes priority, then static data
+  const spotNormal = spotNormalOverride || data.spotNormal || null;
+
+  const borderClass = spotNormal === 'Spot' ? 'spot-border' : spotNormal === 'Normal' ? 'normal-border' : '';
+
   return (
-    <div className={`s-card ${selected ? 'selected' : ''}`} onClick={onClick}>
+    <div className={`s-card ${selected ? 'selected' : ''} ${borderClass}`} onClick={onClick}>
       {/* Header */}
       <div className="s-card-header">
         <div className="s-card-header-left">
@@ -69,6 +75,11 @@ const ShipmentCard: React.FC<Props> = ({ data, selected, onClick }) => {
           <span className="s-card-type">{data.type}</span>
           <span className="s-card-dot" />
           <span className="s-card-type">{data.incoterm}</span>
+          {spotNormal && (
+            <span className={`s-card-spot-badge ${spotNormal === 'Spot' ? 'spot' : 'normal-rfq'}`}>
+              {spotNormal === 'Spot' ? 'SPOT' : 'NORMAL'}
+            </span>
+          )}
         </div>
         {data.supplierName && (
           <div className="s-card-header-right">

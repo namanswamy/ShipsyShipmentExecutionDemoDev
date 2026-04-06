@@ -4,25 +4,24 @@ import type { Field } from './tasks';
 // Tasks not listed here have no fields (auto/system tasks)
 export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[]; docName?: string }> = {
   'Select Mode of Shipment': { fields: [
-    { label: 'Mode', code: 'SMF87', value: 'FCL', type: 'dropdown', req: true, opts: ['FCL', 'LCL', 'AIR', 'BULK (MR)', 'BREAK BULK (MB)'], defaultVal: 'FCL' },
+    { label: 'Mode', code: 'SMF87', value: 'FCL', type: 'dropdown', req: true, opts: ['FCL', 'LCL', 'Bulk', 'Break Bulk'], defaultVal: 'FCL' },
     { label: 'Incoterm', code: 'SMF88', value: 'EXW', type: 'dropdown', req: true, opts: ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'], defaultVal: 'EXW' },
     { label: 'Spot / Normal', value: '', type: 'dropdown', req: true, opts: ['Spot', 'Normal'], note: 'NEW' },
   ] },
 
   'Select Port Details': { fields: [
-    { label: 'Place of Receipt at Origin', code: 'SMF103', value: '', type: 'dropdown', req: true, opts: ['Mundra', 'Nhava Sheva (JNPT)', 'Chennai', 'Kolkata', 'Visakhapatnam', 'Cochin', 'Kandla', 'Tuticorin', 'Mangalore', 'Paradip'] },
-    { label: 'Port of Loading', code: 'SMF4', value: '', type: 'dropdown', req: true, opts: ['CNSHA - Shanghai', 'CNNGB - Ningbo', 'SGSIN - Singapore', 'KRPUS - Busan', 'AEJEA - Jebel Ali', 'DEHAM - Hamburg', 'GBFXT - Felixstowe', 'USNYC - New York', 'USLAX - Los Angeles', 'MYPKG - Port Klang', 'THLKR - Laem Chabang', 'BRSSZ - Santos'] },
-    { label: 'Port of Discharge', code: 'SMF5', value: '', type: 'dropdown', req: true, opts: ['INNSA - Nhava Sheva', 'INMUN - Mundra', 'INCHE - Chennai', 'INCCU - Kolkata', 'INBOM - Mumbai', 'INTUT - Tuticorin', 'INVTZ - Visakhapatnam', 'INCOK - Cochin'] },
-    { label: 'Destination Port', code: 'SMF3', value: '', type: 'dropdown', req: true, opts: ['INNSA - Nhava Sheva', 'INMUN - Mundra', 'INCHE - Chennai', 'INCCU - Kolkata', 'INBOM - Mumbai', 'INDEL - Delhi ICD', 'INAMD - Ahmedabad ICD', 'INBLR - Bangalore ICD'] },
+    { label: 'Place of Receipt at Origin', code: 'SMF103', value: '', type: 'dropdown', req: true, opts: ['Kutno', 'Pipavav', 'ICD/CFS Chennai', 'Nhava Sheva', 'Songkhla', 'Salvador, BA', 'Santos, SP', 'Vizagapatnam', 'Lat Krabang', 'Penang Port', 'Dadri (Greater Noida)', 'Fremantle', 'Chittagong', 'Legnickie Pole, Poland', 'Manaus, AM', 'Allcargo Global Logistics Limited (CFS)', 'Copenhagen', 'Rio de Janeiro, RJ', 'Paranagua, PR', 'Hong Kong'] },
+    { label: 'Port of Loading', code: 'SMF4', value: '', type: 'dropdown', req: true, opts: ['Kutno', 'Pipavav', 'ICD/CFS Chennai', 'Nhava Sheva', 'Songkhla', 'Salvador, BA', 'Santos, SP', 'Vizagapatnam', 'Lat Krabang', 'Penang Port', 'Dadri (Greater Noida)', 'Fremantle', 'Chittagong', 'Legnickie Pole, Poland', 'Manaus, AM', 'Allcargo Global Logistics Limited (CFS)', 'Copenhagen', 'Rio de Janeiro, RJ', 'Paranagua, PR', 'Hong Kong'] },
+    { label: 'Port of Discharge', code: 'SMF5', value: '', type: 'dropdown', req: true, opts: ['Kutno', 'Pipavav', 'ICD/CFS Chennai', 'Nhava Sheva', 'Songkhla', 'Salvador, BA', 'Santos, SP', 'Vizagapatnam', 'Lat Krabang', 'Penang Port', 'Dadri (Greater Noida)', 'Fremantle', 'Chittagong', 'Legnickie Pole, Poland', 'Manaus, AM', 'Allcargo Global Logistics Limited (CFS)', 'Copenhagen', 'Rio de Janeiro, RJ', 'Paranagua, PR', 'Hong Kong'] },
+    { label: 'Destination Port', code: 'SMF3', value: '', type: 'dropdown', req: true, opts: ['Kutno', 'Pipavav', 'ICD/CFS Chennai', 'Nhava Sheva', 'Songkhla', 'Salvador, BA', 'Santos, SP', 'Vizagapatnam', 'Lat Krabang', 'Penang Port', 'Dadri (Greater Noida)', 'Fremantle', 'Chittagong', 'Legnickie Pole, Poland', 'Manaus, AM', 'Allcargo Global Logistics Limited (CFS)', 'Copenhagen', 'Rio de Janeiro, RJ', 'Paranagua, PR', 'Hong Kong'] },
   ] },
 
   'Enter Container Details': { fields: [
-    { label: 'Container Details', code: 'SMF9', value: '', type: 'text', req: true },
-    { label: 'Container Type', code: 'SMF10', value: '', type: 'dropdown', req: false, opts: ['Dry', 'Reefer', 'Open Top', 'Flat Rack', 'Tank', 'Hard Top'] },
-    { label: 'Container Size', code: 'SMF11', value: '', type: 'dropdown', req: false, opts: ['20ft', '40ft', '40ft HC', '45ft HC'] },
-    { label: 'Container Count', code: 'SMF12', value: '', type: 'number', req: false },
-    { label: 'Container Total Weight', code: 'SMF13', value: '', type: 'number', req: false },
-    { label: 'Container Weight Unit', code: 'SMF14', value: '', type: 'dropdown', req: false, opts: ['KG', 'MT', 'LBS'] },
+    { label: 'Container Type', code: 'SMF10', value: '', type: 'dropdown', req: false, opts: ['Dry', 'Reefer', 'Open Top', 'Flat Rack', 'Tank', 'Hard Top'], note: 'container-row' },
+    { label: 'Container Size', code: 'SMF11', value: '', type: 'dropdown', req: false, opts: ['20ft', '40ft', '40ft HC', '45ft HC'], note: 'container-row' },
+    { label: 'Container Count', code: 'SMF12', value: '', type: 'number', req: false, note: 'container-row' },
+    { label: 'Container Total Weight', code: 'SMF13', value: '', type: 'number', req: false, note: 'container-row' },
+    { label: 'Container Weight Unit', code: 'SMF14', value: '', type: 'dropdown', req: false, opts: ['KG', 'MT', 'LBS'], note: 'container-row' },
   ] },
 
   'Enter Package Details': { fields: [

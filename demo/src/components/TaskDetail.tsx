@@ -169,6 +169,88 @@ const FieldInput: React.FC<{ f: Field; value?: string; onChange?: (val: string) 
   return <input className="field-input" type={f.type === 'number' ? 'number' : 'text'} placeholder="Enter value" value={value || ''} onChange={e => handleChange(e.target.value)} />;
 };
 
+// ── Container Row Repeater ──
+// Renders container fields as repeatable horizontal rows with + Add More
+interface ContainerRowRepeaterProps {
+  fields: Field[];
+  fieldValues: Record<string, string>;
+  onFieldChange: (label: string, value: string) => void;
+}
+
+const ContainerRowRepeater: React.FC<ContainerRowRepeaterProps> = ({ fields, fieldValues, onFieldChange }) => {
+  const [rowCount, setRowCount] = useState(() => {
+    // Detect existing rows from saved field values
+    let max = 1;
+    for (const key of Object.keys(fieldValues)) {
+      const match = key.match(/_row(\d+)$/);
+      if (match) max = Math.max(max, parseInt(match[1]) + 1);
+    }
+    return max;
+  });
+
+  const getKey = (label: string, rowIdx: number) => rowIdx === 0 ? label : `${label}_row${rowIdx}`;
+
+  return (
+    <div className="container-repeater">
+      {/* Column headers */}
+      <div className="container-row container-row-header">
+        <div className="container-row-num">#</div>
+        {fields.map(f => (
+          <div key={f.label} className="container-row-cell-header">{f.label}</div>
+        ))}
+        <div className="container-row-action-header"></div>
+      </div>
+
+      {/* Data rows */}
+      {Array.from({ length: rowCount }).map((_, rowIdx) => (
+        <div key={rowIdx} className="container-row container-row-data">
+          <div className="container-row-num">{rowIdx + 1}</div>
+          {fields.map(f => {
+            const key = getKey(f.label, rowIdx);
+            return (
+              <div key={f.label} className="container-row-cell">
+                <FieldInput f={f} value={fieldValues[key]} onChange={v => onFieldChange(key, v)} />
+              </div>
+            );
+          })}
+          <div className="container-row-action">
+            {rowCount > 1 && (
+              <button
+                className="container-row-remove"
+                onClick={() => {
+                  // Clear values for this row and shift subsequent rows up
+                  const newValues = { ...fieldValues };
+                  for (let r = rowIdx; r < rowCount - 1; r++) {
+                    fields.forEach(f => {
+                      const curKey = getKey(f.label, r);
+                      const nextKey = getKey(f.label, r + 1);
+                      newValues[curKey] = fieldValues[nextKey] || '';
+                    });
+                  }
+                  // Clear last row
+                  fields.forEach(f => {
+                    const lastKey = getKey(f.label, rowCount - 1);
+                    delete newValues[lastKey];
+                  });
+                  Object.entries(newValues).forEach(([k, v]) => onFieldChange(k, v));
+                  setRowCount(prev => prev - 1);
+                }}
+              >
+                &#10005;
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+
+      {/* Add more button */}
+      <button className="container-add-more" onClick={() => setRowCount(prev => prev + 1)}>
+        <span style={{ fontSize: 15, fontWeight: 700 }}>+</span> Add More
+      </button>
+    </div>
+  );
+};
+
 const C_INCOTERMS = ['CIF', 'CFR', 'CPT', 'CIP'];
 const D_INCOTERMS = ['DAP', 'DPU', 'DDP'];
 
@@ -199,7 +281,15 @@ interface Props {
 
 // Map shipment mode codes to display values for the Mode dropdown
 const MODE_DISPLAY: Record<string, string> = {
-  FCL: 'FCL', LCL: 'LCL', AIR: 'AIR', BB: 'BREAK BULK (MB)', BULK: 'BULK (MR)',
+  FCL: 'FCL', LCL: 'LCL', AIR: 'Air', BB: 'Break Bulk', BULK: 'Bulk',
+};
+
+// Conditional mode options based on shipment card's mode
+const SEA_MODES = ['FCL', 'LCL', 'Bulk', 'Break Bulk'];
+const AIR_MODES = ['Air'];
+const getModeOpts = (shipmentMode?: string): string[] => {
+  if (shipmentMode === 'AIR' || shipmentMode === 'Air') return AIR_MODES;
+  return SEA_MODES;
 };
 
 const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit, onVendorTaskSubmit, savedFieldValues, hideHeader, submitted }) => {
@@ -224,7 +314,10 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
   const isSelectModeTask = task.name === 'Select Mode of Shipment';
   if (isSelectModeTask && shipmentMode) {
     allF.forEach(f => {
-      if (f.label === 'Mode') f.defaultVal = MODE_DISPLAY[shipmentMode] || shipmentMode;
+      if (f.label === 'Mode') {
+        f.defaultVal = MODE_DISPLAY[shipmentMode] || shipmentMode;
+        f.opts = getModeOpts(shipmentMode);
+      }
       if (f.label === 'Incoterm') f.defaultVal = incoterm;
     });
   }
@@ -332,7 +425,33 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
           </div>
         ) : (
           <>
-            {allF.length > 0 && (
+            {allF.length > 0 && (() => {
+              // Check if this is a container-row task
+              const containerFields = allF.filter(f => f.note === 'container-row');
+              const nonContainerFields = allF.filter(f => f.note !== 'container-row');
+
+              if (containerFields.length > 0) {
+                return (
+                  <div style={{ padding: '0 4px' }}>
+                    {nonContainerFields.length > 0 && (
+                      <div className="fields-grid">
+                        {nonContainerFields.map((f, i) => (
+                          <div key={i} className="field-item">
+                            <div className="field-label">
+                              {f.label}
+                              {f.req && <span className="field-required">*</span>}
+                            </div>
+                            <FieldInput f={f} value={fieldValues[f.label]} onChange={v => updateField(f.label, v)} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <ContainerRowRepeater fields={containerFields} fieldValues={fieldValues} onFieldChange={updateField} />
+                  </div>
+                );
+              }
+
+              return (
               <div className="fields-grid">
                 {allF.map((f, i) => {
                   if (!shouldShowField(f)) return null;
@@ -374,7 +493,8 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
                   );
                 })}
               </div>
-            )}
+              );
+            })()}
 
             {docF.length > 0 && (
               <div className="doc-section">

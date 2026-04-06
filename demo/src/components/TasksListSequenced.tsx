@@ -16,6 +16,9 @@ const STATUS_OPTS = [
   { v: 'Done', bg: '#D3FFEA', c: '#0F6E3C' },
   { v: 'Pending', bg: '#FFF3E0', c: '#E65100' },
   { v: 'Sent for Approval', bg: '#E3F2FD', c: '#1565C0' },
+  { v: 'Rework Required', bg: '#FFFED2', c: '#8B7000' },
+  { v: 'Not Approved', bg: '#FFD3D3', c: '#A00' },
+  { v: 'Approved', bg: '#D3FFEA', c: '#0F6E3C' },
   { v: 'Cancelled', bg: '#FFD3D3', c: '#A00' },
 ];
 
@@ -73,6 +76,7 @@ interface Props {
   setMultiVendorSubmitted: React.Dispatch<React.SetStateAction<Record<string, Set<number>>>>;
   confirmedVendors: Record<string, string[]>;
   setConfirmedVendors: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  onSpotNormalChange?: (value: 'Spot' | 'Normal') => void;
 }
 
 const TasksListSequenced: React.FC<Props> = ({
@@ -88,6 +92,7 @@ const TasksListSequenced: React.FC<Props> = ({
   collapsed, setCollapsed,
   multiVendorSubmitted, setMultiVendorSubmitted,
   confirmedVendors, setConfirmedVendors,
+  onSpotNormalChange,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -110,7 +115,7 @@ const TasksListSequenced: React.FC<Props> = ({
   const currentActiveSeq = useMemo(() => {
     for (const t of allTasks) {
       const st = getStatus(t.taskKey);
-      if (st !== 'Done' && st !== 'Sent for Approval') return t.seq;
+      if (st !== 'Done' && st !== 'Sent for Approval' && st !== 'Rework Required' && st !== 'Not Approved' && st !== 'Approved') return t.seq;
     }
     return Infinity;
   }, [allTasks, statuses]);
@@ -121,11 +126,13 @@ const TasksListSequenced: React.FC<Props> = ({
   );
 
   // Report which personas have visible tasks
+  // Depend on statuses too so this re-fires when switching between shipments
+  // with identical task structures but different status maps
   useEffect(() => {
     const personaSet = new Set(visibleTasks.map(t => t.persona));
     personaSet.add('Shipper'); // Always show Shipper
     onVisiblePersonasChange(Array.from(personaSet));
-  }, [visibleTasks, onVisiblePersonasChange]);
+  }, [visibleTasks, statuses, onVisiblePersonasChange]);
 
   const personaTasks = useMemo(
     () => visibleTasks.filter(t => {
@@ -171,7 +178,9 @@ const TasksListSequenced: React.FC<Props> = ({
 
       // Extract Spot/Normal from Select Mode of Shipment
       if (task?.name === 'Select Mode of Shipment') {
-        setIsSpot(fieldValues['Spot / Normal'] === 'Spot');
+        const spotVal = fieldValues['Spot / Normal'] === 'Spot';
+        setIsSpot(spotVal);
+        onSpotNormalChange?.(spotVal ? 'Spot' : 'Normal');
       }
 
       // Extract confirmed vendors from CFS/ICD/Transporter confirmation tasks
