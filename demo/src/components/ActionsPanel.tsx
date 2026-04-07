@@ -115,6 +115,42 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
       } else {
         setStatuses(demoStatuses);
       }
+    } else if (selectedShipmentId === 'DEMO-CHARGE-FF' || selectedShipmentId === 'DEMO-CHARGE-CHA') {
+      // Charge Confirmation demo shipments — incidentals approved, charge confirmation task open
+      const freshTasks = resolveTasksForShipment(mode, incoterm, null);
+      const demoStatuses: Record<string, string> = {};
+      freshTasks.forEach(t => {
+        if (t.seq <= 25) demoStatuses[t.taskKey] = 'Done';
+      });
+
+      setVendorSelections(['Freight Forwarder', 'CHA', 'Transporter']);
+      setGpoResult(null);
+      setIsSpot(false);
+      setConfirmedVendors({ 'Transporter': ['Transporter 1', 'Transporter 2'] });
+
+      if (selectedShipmentId === 'DEMO-CHARGE-FF') {
+        setPortDetails({ pol: 'SHANGHAI', pod: 'NHAVA SHEVA' });
+        // FF incidental approved + charge confirmation done → invoice generation is next
+        const ffIncidental = freshTasks.find(t => t.name === 'FF Incidental Events');
+        const ffChargeConf = freshTasks.find(t => t.name === 'FF Charge Confirmation');
+        if (ffIncidental) demoStatuses[ffIncidental.taskKey] = 'Approved';
+        if (ffChargeConf) demoStatuses[ffChargeConf.taskKey] = 'Done';
+        setIncidentalDrafts(ffIncidental ? { [ffIncidental.taskKey]: createDemo4Draft() as IncidentalDraft } : {});
+      } else {
+        setPortDetails({ pol: 'BUSAN', pod: 'MUNDRA' });
+        // FF done through invoice, CHA incidental approved + charge confirmation done → CHA invoice generation is next
+        const ffIncidental = freshTasks.find(t => t.name === 'FF Incidental Events');
+        const ffChargeConf = freshTasks.find(t => t.name === 'FF Charge Confirmation');
+        const ffInvoice = freshTasks.find(t => t.name === 'FF Invoice Generation');
+        const chaIncidental = freshTasks.find(t => t.name === 'CHA Incidental Events');
+        const chaChargeConf = freshTasks.find(t => t.name === 'CHA Charge Confirmation');
+        if (ffIncidental) demoStatuses[ffIncidental.taskKey] = 'Approved';
+        if (ffChargeConf) demoStatuses[ffChargeConf.taskKey] = 'Done';
+        if (ffInvoice) demoStatuses[ffInvoice.taskKey] = 'Done';
+        if (chaIncidental) demoStatuses[chaIncidental.taskKey] = 'Approved';
+        if (chaChargeConf) demoStatuses[chaChargeConf.taskKey] = 'Done';
+      }
+      setStatuses(demoStatuses);
     } else {
       // Check if shipment has pre-configured spot/normal
       const shipmentData = shipments.find(s => s.id === selectedShipmentId);

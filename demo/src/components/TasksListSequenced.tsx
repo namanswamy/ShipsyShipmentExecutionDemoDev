@@ -7,6 +7,11 @@ import type { GPOResult } from './GPOTaskView';
 import IncidentalChargesView from './IncidentalChargesView';
 import type { IncidentalDraft } from './IncidentalChargesView';
 import MultiVendorWrapper, { isMultiVendorPersona, getDefaultVendorNames } from './MultiVendorWrapper';
+import ChargeConfirmationView from './ChargeConfirmationView';
+import type { ChargeConfirmationData, TPChargeRow } from './ChargeConfirmationView';
+import InvoiceGenerationView from './InvoiceGenerationView';
+import type { InvoiceGenerationData } from './InvoiceGenerationView';
+import { getBidsForVendors } from '../data/bidData';
 
 const milestones = ['Drafts', 'Origin', 'In Transit', 'Destination'];
 
@@ -240,6 +245,85 @@ const TasksListSequenced: React.FC<Props> = ({
     'CFS Incidental Events', 'ICD Incidental Events', 'Transporter Incidental Events',
   ];
 
+  // Charge Confirmation task names
+  const CHARGE_CONFIRMATION_TASKS = [
+    'FF Charge Confirmation', 'CHA Charge Confirmation',
+  ];
+
+  // Invoice Generation task names
+  const INVOICE_GENERATION_TASKS = [
+    'FF Invoice Generation', 'CHA Invoice Generation',
+  ];
+
+  // Build charge confirmation data for a vendor type
+  const buildChargeConfirmationData = (vendorType: string): ChargeConfirmationData => {
+    // Get GPO bid for this vendor
+    const vendorTypeMap: Record<string, string> = {
+      'FF': 'Freight Forwarder', 'CHA': 'CHA', 'CFS': 'CFS', 'ICD': 'ICD', 'Transporter': 'Transporter',
+    };
+    const gpoVendorKey = vendorTypeMap[vendorType] || vendorType;
+    const allBids = getBidsForVendors([gpoVendorKey], portDetails.pol, portDetails.pod);
+    // Use rank 1 bid as the selected one (or from gpoResult if available)
+    let selectedBid = allBids.find(b => b.rank === 1) || null;
+    if (gpoResult?.selectedBids?.[gpoVendorKey]) {
+      const selectedId = gpoResult.selectedBids[gpoVendorKey];
+      const fromResult = gpoResult.allBids?.find(b => b.id === selectedId);
+      if (fromResult) selectedBid = fromResult;
+    }
+
+    if (vendorType === 'FF') {
+      return {
+        vendorType: 'Freight Forwarder',
+        gpoBid: selectedBid,
+        incidentalCharges: [
+          { id: 'ic-1', chargeName: 'Loading charges', level: 'BL', vendorPrice: '800', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '18% GST', total: '944.00' },
+          { id: 'ic-2', chargeName: 'Storage charges', level: 'Container', vendorPrice: '500', currency: 'INR', unitType: 'Per Container', units: '2.00', tax: '18% GST', total: '1180.00' },
+        ],
+        selfReimbCharges: [
+          { id: 'sr-1', chargeName: 'Documentation charges', level: 'BL', vendorPrice: '950', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '', total: '950.00' },
+        ],
+        thirdPartyCharges: [
+          { id: 'tp-1', chargeName: 'License charges', level: 'Container', vendorPrice: '300', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '354.00', invoiceNo: 'INV301', invoiceDate: '15-03-2026', basicValue: '300.00', cgst: '27.00', sgst: '27.00', igst: '', vendorCode: 'VND002', vendorName: 'XYZ Freight Services' },
+          { id: 'tp-2', chargeName: 'License charges', level: 'Container', vendorPrice: '300', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '354.00', invoiceNo: 'INV302', invoiceDate: '15-03-2026', basicValue: '300.00', cgst: '27.00', sgst: '27.00', igst: '', vendorCode: 'VND002', vendorName: 'XYZ Freight Services' },
+        ] as TPChargeRow[],
+      };
+    }
+
+    // CHA
+    return {
+      vendorType: 'CHA',
+      gpoBid: selectedBid,
+      incidentalCharges: [
+        { id: 'ic-1', chargeName: 'Loading charges', level: 'BL', vendorPrice: '800', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '18% GST', total: '944.00' },
+        { id: 'ic-2', chargeName: 'Storage charges', level: 'Container', vendorPrice: '500', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '590.00' },
+      ],
+      selfReimbCharges: [
+        { id: 'sr-1', chargeName: 'Documentation charges', level: 'BL', vendorPrice: '1200', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '', total: '1200.00' },
+        { id: 'sr-2', chargeName: 'Special equipment charges', level: 'Container', vendorPrice: '450', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '', total: '450.00' },
+      ],
+      thirdPartyCharges: [
+        { id: 'tp-1', chargeName: 'License charges', level: 'Container', vendorPrice: '350', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '413.00', invoiceNo: 'INV201', invoiceDate: '18-03-2026', basicValue: '350.00', cgst: '31.50', sgst: '31.50', igst: '', vendorCode: 'VND003', vendorName: 'PQR Shipping Agency' },
+        { id: 'tp-2', chargeName: 'Registration charges', level: 'Container', vendorPrice: '400', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '472.00', invoiceNo: 'INV202', invoiceDate: '18-03-2026', basicValue: '400.00', cgst: '36.00', sgst: '36.00', igst: '', vendorCode: 'VND004', vendorName: 'Global Trade Solutions' },
+        { id: 'tp-3', chargeName: 'Registration charges', level: 'Container', vendorPrice: '400', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '472.00', invoiceNo: 'INV203', invoiceDate: '18-03-2026', basicValue: '400.00', cgst: '36.00', sgst: '36.00', igst: '', vendorCode: 'VND004', vendorName: 'Global Trade Solutions' },
+      ] as TPChargeRow[],
+    };
+  };
+
+  // Build invoice generation data — same as charge confirmation but TP charges are container-only
+  const buildInvoiceGenerationData = (vendorType: string): InvoiceGenerationData => {
+    const ccData = buildChargeConfirmationData(vendorType);
+    const vendorLabelMap: Record<string, string> = { 'FF': 'FF', 'CHA': 'CHA', 'CFS': 'CFS', 'ICD': 'ICD', 'Transporter': 'Transporter' };
+    return {
+      vendorType: ccData.vendorType,
+      vendorLabel: vendorLabelMap[vendorType] || vendorType,
+      gpoBid: ccData.gpoBid,
+      incidentalCharges: ccData.incidentalCharges,
+      selfReimbCharges: ccData.selfReimbCharges,
+      // Only container-level charges for third party in invoice generation
+      thirdPartyCharges: ccData.thirdPartyCharges.filter(c => c.level === 'Container'),
+    };
+  };
+
   // Fix 1: Multi-vendor submit logic — mark vendor as submitted, complete task only when all done
   const handleMultiVendorSubmit = useCallback((taskKey: string, vendorIdx: number, totalVendors: number, fieldValues?: Record<string, string>) => {
     const fieldKey = `${taskKey}-v${vendorIdx}`;
@@ -269,6 +353,34 @@ const TasksListSequenced: React.FC<Props> = ({
   if (openTaskKey && !isProcessing) {
     const task = allTasks.find(t => t.taskKey === openTaskKey);
     if (task) {
+      // Charge Confirmation tasks
+      if (CHARGE_CONFIRMATION_TASKS.includes(task.name)) {
+        const vendorType = task.name.replace(' Charge Confirmation', '');
+        const confirmationData = buildChargeConfirmationData(vendorType);
+        return (
+          <ChargeConfirmationView
+            taskName={task.name}
+            data={confirmationData}
+            onClose={() => setOpenTaskKey(null)}
+            onSubmit={() => handleSubmitTask(openTaskKey!)}
+          />
+        );
+      }
+
+      // Invoice Generation tasks
+      if (INVOICE_GENERATION_TASKS.includes(task.name)) {
+        const vendorType = task.name.replace(' Invoice Generation', '');
+        const invoiceData = buildInvoiceGenerationData(vendorType);
+        return (
+          <InvoiceGenerationView
+            taskName={task.name}
+            data={invoiceData}
+            onClose={() => setOpenTaskKey(null)}
+            onSubmit={() => handleSubmitTask(openTaskKey!)}
+          />
+        );
+      }
+
       // Incidental Charges tasks
       if (INCIDENTAL_TASKS.includes(task.name)) {
         const isMultiVendor = isMultiVendorPersona(task.persona);

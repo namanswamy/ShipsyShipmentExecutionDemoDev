@@ -1404,3 +1404,15 @@
   .shipment-list-panel { width: 100%; max-height: 300px; }
   .shipment-actions-panel { width: 100%; margin-left: 0; }
 }
+
+/* ═══ PRINT — A4 Invoice ═══ */
+@media print {
+  body * { visibility: hidden !important; }
+  #invoice-print-area, #invoice-print-area * { visibility: visible !important; }
+  #invoice-print-area {
+    position: absolute; top: 0; left: 0;
+    width: 210mm; min-height: 297mm;
+    padding: 12mm 16mm !important;
+    font-size: 10px !important;
+  }
+}
