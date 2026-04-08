@@ -5,7 +5,7 @@ import { resolveTasksForShipment } from '../data/taskSequence';
 import TasksListSequenced from './TasksListSequenced';
 import type { GPOResult } from './GPOTaskView';
 import type { IncidentalDraft } from './IncidentalChargesView';
-import { createDemo2Draft, createDemo3Draft, createDemo4Draft } from '../data/incidentalCharges';
+import { createDemo3Draft, createDemo4Draft } from '../data/incidentalCharges';
 
 interface Props {
   selectedShipmentId: string | null;

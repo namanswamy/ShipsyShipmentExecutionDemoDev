@@ -398,7 +398,7 @@ const InlineApprovalDetail: React.FC<{
                 </tr>
               </thead>
               <tbody>
-                {activeCharges.map((c, idx) => (
+                {activeCharges.map((c) => (
                   <tr key={c.id}>
                     <td style={tdStyle}>{c.chargeDesc}</td>
                     <td style={tdStyle}>{SAC_CODES[c.chargeDesc] || '-'}</td>
