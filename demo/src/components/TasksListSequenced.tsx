@@ -282,15 +282,15 @@ const TasksListSequenced: React.FC<Props> = ({
         vendorLabel: 'FF',
         gpoBid: selectedBid,
         incidentalCharges: [
-          { id: 'ic-1', chargeName: 'Loading charges', level: 'BL', vendorPrice: '800', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '18% GST', total: '944.00' },
-          { id: 'ic-2', chargeName: 'Storage charges', level: 'Container', vendorPrice: '500', currency: 'INR', unitType: 'Per Container', units: '2.00', tax: '18% GST', total: '1180.00' },
+          { id: 'ic-1', chargeName: 'Loading charges', level: 'BL', vendorPrice: '800', currency: 'USD', unitType: 'Per BL', units: '1.00', tax: '18% GST', total: '944.00' },
+          { id: 'ic-2', chargeName: 'Storage charges', level: 'Container', vendorPrice: '500', currency: 'USD', unitType: 'Per Container', units: '2.00', tax: '18% GST', total: '1180.00' },
         ],
         selfReimbCharges: [
-          { id: 'sr-1', chargeName: 'Documentation charges', level: 'BL', vendorPrice: '950', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '', total: '950.00' },
+          { id: 'sr-1', chargeName: 'Documentation charges', level: 'BL', vendorPrice: '950', currency: 'USD', unitType: 'Per BL', units: '1.00', tax: '', total: '950.00' },
         ],
         thirdPartyCharges: [
-          { id: 'tp-1', chargeName: 'License charges', level: 'Container', vendorPrice: '300', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '354.00', invoiceNo: 'INV301', invoiceDate: '15-03-2026', basicValue: '300.00', cgst: '27.00', sgst: '27.00', igst: '', vendorCode: 'VND002', vendorName: 'XYZ Freight Services' },
-          { id: 'tp-2', chargeName: 'License charges', level: 'Container', vendorPrice: '300', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '354.00', invoiceNo: 'INV302', invoiceDate: '15-03-2026', basicValue: '300.00', cgst: '27.00', sgst: '27.00', igst: '', vendorCode: 'VND002', vendorName: 'XYZ Freight Services' },
+          { id: 'tp-1', chargeName: 'License charges', level: 'Container', vendorPrice: '300', currency: 'USD', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '354.00', invoiceNo: 'INV301', invoiceDate: '15-03-2026', basicValue: '300.00', cgst: '27.00', sgst: '27.00', igst: '', vendorCode: 'VND002', vendorName: 'XYZ Freight Services' },
+          { id: 'tp-2', chargeName: 'License charges', level: 'Container', vendorPrice: '300', currency: 'USD', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '354.00', invoiceNo: 'INV302', invoiceDate: '15-03-2026', basicValue: '300.00', cgst: '27.00', sgst: '27.00', igst: '', vendorCode: 'VND002', vendorName: 'XYZ Freight Services' },
         ] as TPChargeRow[],
       };
     }
@@ -301,17 +301,17 @@ const TasksListSequenced: React.FC<Props> = ({
       vendorLabel: 'CHA',
       gpoBid: selectedBid,
       incidentalCharges: [
-        { id: 'ic-1', chargeName: 'Loading charges', level: 'BL', vendorPrice: '800', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '18% GST', total: '944.00' },
-        { id: 'ic-2', chargeName: 'Storage charges', level: 'Container', vendorPrice: '500', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '590.00' },
+        { id: 'ic-1', chargeName: 'Loading charges', level: 'BL', vendorPrice: '800', currency: 'USD', unitType: 'Per BL', units: '1.00', tax: '18% GST', total: '944.00' },
+        { id: 'ic-2', chargeName: 'Storage charges', level: 'Container', vendorPrice: '500', currency: 'USD', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '590.00' },
       ],
       selfReimbCharges: [
-        { id: 'sr-1', chargeName: 'Documentation charges', level: 'BL', vendorPrice: '1200', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '', total: '1200.00' },
-        { id: 'sr-2', chargeName: 'Special equipment charges', level: 'Container', vendorPrice: '450', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '', total: '450.00' },
+        { id: 'sr-1', chargeName: 'Documentation charges', level: 'BL', vendorPrice: '1200', currency: 'USD', unitType: 'Per BL', units: '1.00', tax: '', total: '1200.00' },
+        { id: 'sr-2', chargeName: 'Special equipment charges', level: 'Container', vendorPrice: '450', currency: 'USD', unitType: 'Per Container', units: '1.00', tax: '', total: '450.00' },
       ],
       thirdPartyCharges: [
-        { id: 'tp-1', chargeName: 'License charges', level: 'Container', vendorPrice: '350', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '413.00', invoiceNo: 'INV201', invoiceDate: '18-03-2026', basicValue: '350.00', cgst: '31.50', sgst: '31.50', igst: '', vendorCode: 'VND003', vendorName: 'PQR Shipping Agency' },
-        { id: 'tp-2', chargeName: 'Registration charges', level: 'Container', vendorPrice: '400', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '472.00', invoiceNo: 'INV202', invoiceDate: '18-03-2026', basicValue: '400.00', cgst: '36.00', sgst: '36.00', igst: '', vendorCode: 'VND004', vendorName: 'Global Trade Solutions' },
-        { id: 'tp-3', chargeName: 'Registration charges', level: 'Container', vendorPrice: '400', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '472.00', invoiceNo: 'INV203', invoiceDate: '18-03-2026', basicValue: '400.00', cgst: '36.00', sgst: '36.00', igst: '', vendorCode: 'VND004', vendorName: 'Global Trade Solutions' },
+        { id: 'tp-1', chargeName: 'License charges', level: 'Container', vendorPrice: '350', currency: 'USD', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '413.00', invoiceNo: 'INV201', invoiceDate: '18-03-2026', basicValue: '350.00', cgst: '31.50', sgst: '31.50', igst: '', vendorCode: 'VND003', vendorName: 'PQR Shipping Agency' },
+        { id: 'tp-2', chargeName: 'Registration charges', level: 'Container', vendorPrice: '400', currency: 'USD', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '472.00', invoiceNo: 'INV202', invoiceDate: '18-03-2026', basicValue: '400.00', cgst: '36.00', sgst: '36.00', igst: '', vendorCode: 'VND004', vendorName: 'Global Trade Solutions' },
+        { id: 'tp-3', chargeName: 'Registration charges', level: 'Container', vendorPrice: '400', currency: 'USD', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '472.00', invoiceNo: 'INV203', invoiceDate: '18-03-2026', basicValue: '400.00', cgst: '36.00', sgst: '36.00', igst: '', vendorCode: 'VND004', vendorName: 'Global Trade Solutions' },
       ] as TPChargeRow[],
     };
   };

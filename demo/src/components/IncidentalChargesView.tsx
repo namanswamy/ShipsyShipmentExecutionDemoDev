@@ -202,7 +202,7 @@ const IncidentalTable: React.FC<{
               <td style={tdStyle}><input type="checkbox" checked={r.selected} onChange={() => toggle(i)} disabled={locked} /></td>
               <td style={tdStyle}>{isBLTable ? (r as BLRow).blNo : (r as ContainerRow).containerNo}</td>
               <td style={tdStyle}>{isBLTable ? (r as BLRow).blDate : (r as ContainerRow).date}</td>
-              <td style={tdStyle}>{rate}</td><td style={tdStyle}>INR</td>
+              <td style={tdStyle}>{rate}</td><td style={tdStyle}>USD</td>
               <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
               <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? statusText : '—'}</td>
               {hasApproverData && <td style={tdStyle}><ApproverCell action={r.approverAction} remark={r.approverRemark} /></td>}
@@ -223,13 +223,13 @@ const IncidentalTable: React.FC<{
         <>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4 }}>BL-wise</div>
           {renderRows(charge.blRows, true, toggleBL, rates.blRate)}
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>BL Total: INR {blTotal.toLocaleString()}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>BL Total: USD {blTotal.toLocaleString()}</div>
         </>
       ) : (
         <>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4 }}>Container-wise — Rate/Container = {rates.containerRate}, Currency = INR</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4 }}>Container-wise — Rate/Container = {rates.containerRate}, Currency = USD</div>
           {renderRows(charge.containerRows, false, toggleCN, rates.containerRate)}
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>Container Total: INR {cnTotal.toLocaleString()}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>Container Total: USD {cnTotal.toLocaleString()}</div>
         </>
       )}
     </div>
@@ -285,7 +285,7 @@ const SelfReimbTable: React.FC<{
               <td style={tdStyle}>{isBLTable ? (r as BLRow).blNo : (r as ContainerRow).containerNo}</td>
               <td style={tdStyle}>{isBLTable ? (r as BLRow).blDate : (r as ContainerRow).date}</td>
               <td style={tdStyle}><input style={{ ...inputSmall, background: locked ? '#f0f0f0' : '#fff' }} type="number" placeholder="Enter rate" value={r.rate} disabled={locked} onChange={e => update(i, 'rate', e.target.value)} /></td>
-              <td style={tdStyle}><select style={{ ...inputSmall, width: 70, background: locked ? '#f0f0f0' : '#fff' }} value={r.currency} disabled={locked} onChange={e => update(i, 'currency', e.target.value)}><option>INR</option><option>USD</option></select></td>
+              <td style={tdStyle}><select style={{ ...inputSmall, width: 70, background: locked ? '#f0f0f0' : '#fff' }} value={r.currency} disabled={locked} onChange={e => update(i, 'currency', e.target.value)}><option>USD</option><option>USD</option></select></td>
               <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
               <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? statusText : '—'}</td>
               {hasApproverData && <td style={tdStyle}><ApproverCell action={r.approverAction} remark={r.approverRemark} /></td>}
@@ -306,13 +306,13 @@ const SelfReimbTable: React.FC<{
         <>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4 }}>BL-wise</div>
           {renderSelfRows(charge.blRows, true, toggleBL, (i, f, v) => updateBL(i, f as keyof BLRow, v))}
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>BL Total: INR {blTotal.toLocaleString()}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>BL Total: USD {blTotal.toLocaleString()}</div>
         </>
       ) : (
         <>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4 }}>Container-wise</div>
           {renderSelfRows(charge.containerRows, false, toggleCN, (i, f, v) => updateCN(i, f as keyof ContainerRow, v))}
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>Container Total: INR {cnTotal.toLocaleString()}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>Container Total: USD {cnTotal.toLocaleString()}</div>
         </>
       )}
     </div>
@@ -462,13 +462,13 @@ const ThirdPartyTable: React.FC<{
         <>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4 }}>BL-wise</div>
           {renderTable(charge.blRows, true, toggleBL)}
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>BL Total: INR {total.toFixed(2)}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>BL Total: USD {total.toFixed(2)}</div>
         </>
       ) : (
         <>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 4 }}>Container-wise</div>
           {renderTable(charge.containerRows, false, toggleCN)}
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>Container Total: INR {total.toFixed(2)}</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#333', textAlign: 'right' }}>Container Total: USD {total.toFixed(2)}</div>
         </>
       )}
     </div>
@@ -707,7 +707,7 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
               fontSize: 14, fontWeight: 700, color: incidentalTotal > 0 ? '#E65100' : '#999',
               border: '1px solid ' + (incidentalTotal > 0 ? '#FFCC80' : '#E8E8E8'),
             }}>
-              INR {incidentalTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              USD {incidentalTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 150 }}>
@@ -717,7 +717,7 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
               fontSize: 14, fontWeight: 700, color: selfReimbTotal > 0 ? '#1565C0' : '#999',
               border: '1px solid ' + (selfReimbTotal > 0 ? '#90CAF9' : '#E8E8E8'),
             }}>
-              INR {selfReimbTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              USD {selfReimbTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 150 }}>
@@ -727,7 +727,7 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
               fontSize: 14, fontWeight: 700, color: thirdPartyTotal > 0 ? '#2E7D32' : '#999',
               border: '1px solid ' + (thirdPartyTotal > 0 ? '#A5D6A7' : '#E8E8E8'),
             }}>
-              INR {thirdPartyTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              USD {thirdPartyTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 170 }}>
@@ -736,7 +736,7 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
               background: grandTotal > 0 ? '#333' : '#F5F5F5', borderRadius: 4, padding: '8px 12px',
               fontSize: 16, fontWeight: 700, color: grandTotal > 0 ? '#fff' : '#999',
             }}>
-              INR {grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              USD {grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
         </div>

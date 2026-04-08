@@ -54,13 +54,13 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Petchem', chargesClaimed: 7, totalAmount: 1700, status: 'Pending - New',
     createdAt: '10-02-2026 11:50:20', asnNo: 'ASN001', workflowId: 'WF001',
     charges: [
-      { id: 'c1', chargeDesc: 'Storage Fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 400, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c2', chargeDesc: 'Transport Fee', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 300, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c3', chargeDesc: 'Handling Charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 150, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c4', chargeDesc: 'Handling Charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 150, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c5', chargeDesc: 'Detention charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 400, currency: 'INR', chargeType: 'Self-Reimbursement' },
-      { id: 'c6', chargeDesc: 'Equipment charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 150, currency: 'INR', chargeType: 'Self-Reimbursement' },
-      { id: 'c7', chargeDesc: 'Equipment charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 150, currency: 'INR', chargeType: 'Self-Reimbursement' },
+      { id: 'c1', chargeDesc: 'Storage Fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 400, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c2', chargeDesc: 'Transport Fee', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 300, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c3', chargeDesc: 'Handling Charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 150, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c4', chargeDesc: 'Handling Charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 150, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c5', chargeDesc: 'Detention charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 400, currency: 'USD', chargeType: 'Self-Reimbursement' },
+      { id: 'c6', chargeDesc: 'Equipment charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 150, currency: 'USD', chargeType: 'Self-Reimbursement' },
+      { id: 'c7', chargeDesc: 'Equipment charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 150, currency: 'USD', chargeType: 'Self-Reimbursement' },
     ],
   },
   {
@@ -68,7 +68,7 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Retail', chargesClaimed: 1, totalAmount: 1200, status: 'Pending - Resubmitted',
     createdAt: '11-02-2026 09:30:15', asnNo: 'ASN001', workflowId: 'WF002',
     charges: [
-      { id: 'c8', chargeDesc: 'Documentation charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 1200, currency: 'INR', chargeType: 'Self-Reimbursement' },
+      { id: 'c8', chargeDesc: 'Documentation charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 1200, currency: 'USD', chargeType: 'Self-Reimbursement' },
     ],
   },
   {
@@ -76,8 +76,8 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Retail', chargesClaimed: 2, totalAmount: 900, status: 'Pending - New',
     createdAt: '12-02-2026 14:20:00', asnNo: 'ASN002', workflowId: 'WF001',
     charges: [
-      { id: 'c9', chargeDesc: 'Loading charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 500, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c10', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 400, currency: 'INR', chargeType: 'Incidental' },
+      { id: 'c9', chargeDesc: 'Loading charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 500, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c10', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 400, currency: 'USD', chargeType: 'Incidental' },
     ],
   },
   {
@@ -85,9 +85,9 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Petchem', chargesClaimed: 3, totalAmount: 1450, status: 'Pending - New',
     createdAt: '13-02-2026 16:45:30', asnNo: 'ASN002', workflowId: 'WF003',
     charges: [
-      { id: 'c11', chargeDesc: 'Labelling fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '14-Mar-26', containerNo: '-', rate: 0, currency: 'INR', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '123', tpInvoiceDate: '14-03-2026', tpInvoiceValue: 118, basicValue: 100, cgst: 9, sgst: 9, igst: 0, tpVendorCode: 'VND001', tpVendorName: 'ABC Logistics Pvt Ltd' },
-      { id: 'c12', chargeDesc: 'Agency charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 0, currency: 'INR', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '456', tpInvoiceDate: '14-03-2026', tpInvoiceValue: 118, basicValue: 100, cgst: 0, sgst: 0, igst: 18, tpVendorCode: 'VND002', tpVendorName: 'XYZ Freight Services' },
-      { id: 'c13', chargeDesc: 'Agency charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 0, currency: 'INR', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '789', tpInvoiceDate: '14-03-2026', tpInvoiceValue: 118, basicValue: 100, cgst: 0, sgst: 0, igst: 18, tpVendorCode: 'VND002', tpVendorName: 'XYZ Freight Services' },
+      { id: 'c11', chargeDesc: 'Labelling fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '14-Mar-26', containerNo: '-', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '123', tpInvoiceDate: '14-03-2026', tpInvoiceValue: 118, basicValue: 100, cgst: 9, sgst: 9, igst: 0, tpVendorCode: 'VND001', tpVendorName: 'ABC Logistics Pvt Ltd' },
+      { id: 'c12', chargeDesc: 'Agency charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '456', tpInvoiceDate: '14-03-2026', tpInvoiceValue: 118, basicValue: 100, cgst: 0, sgst: 0, igst: 18, tpVendorCode: 'VND002', tpVendorName: 'XYZ Freight Services' },
+      { id: 'c13', chargeDesc: 'Agency charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '789', tpInvoiceDate: '14-03-2026', tpInvoiceValue: 118, basicValue: 100, cgst: 0, sgst: 0, igst: 18, tpVendorCode: 'VND002', tpVendorName: 'XYZ Freight Services' },
     ],
   },
   {
@@ -95,10 +95,10 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Jio', chargesClaimed: 4, totalAmount: 2200, status: 'Pending - New',
     createdAt: '14-02-2026 10:15:00', asnNo: 'ASN003', workflowId: 'WF002',
     charges: [
-      { id: 'c14', chargeDesc: 'Storage Fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '15-Mar-26', containerNo: '-', rate: 600, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c15', chargeDesc: 'Storage Fees', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 350, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c16', chargeDesc: 'Documentation charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '15-Mar-26', containerNo: '-', rate: 800, currency: 'INR', chargeType: 'Self-Reimbursement' },
-      { id: 'c17', chargeDesc: 'Special equipment charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 450, currency: 'INR', chargeType: 'Self-Reimbursement' },
+      { id: 'c14', chargeDesc: 'Storage Fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '15-Mar-26', containerNo: '-', rate: 600, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c15', chargeDesc: 'Storage Fees', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 350, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c16', chargeDesc: 'Documentation charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '15-Mar-26', containerNo: '-', rate: 800, currency: 'USD', chargeType: 'Self-Reimbursement' },
+      { id: 'c17', chargeDesc: 'Special equipment charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 450, currency: 'USD', chargeType: 'Self-Reimbursement' },
     ],
   },
   {
@@ -106,8 +106,8 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Petchem', chargesClaimed: 2, totalAmount: 750, status: 'Pending - New',
     createdAt: '15-02-2026 08:00:00', asnNo: 'ASN003', workflowId: 'WF004',
     charges: [
-      { id: 'c18', chargeDesc: 'Loading charges', chargeLevel: 'BL', blNo: 'BL002', blDate: '16-Mar-26', containerNo: '-', rate: 450, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c19', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN003', rate: 300, currency: 'INR', chargeType: 'Incidental' },
+      { id: 'c18', chargeDesc: 'Loading charges', chargeLevel: 'BL', blNo: 'BL002', blDate: '16-Mar-26', containerNo: '-', rate: 450, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c19', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN003', rate: 300, currency: 'USD', chargeType: 'Incidental' },
     ],
   },
   {
@@ -115,9 +115,9 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Retail', chargesClaimed: 3, totalAmount: 1850, status: 'Pending - Resubmitted',
     createdAt: '16-02-2026 13:30:45', asnNo: 'ASN004', workflowId: 'WF003',
     charges: [
-      { id: 'c20', chargeDesc: 'Registration charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '18-Mar-26', containerNo: '-', rate: 0, currency: 'INR', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '901', tpInvoiceDate: '18-03-2026', tpInvoiceValue: 590, basicValue: 500, cgst: 45, sgst: 45, igst: 0, tpVendorCode: 'VND003', tpVendorName: 'PQR Shipping Agency' },
-      { id: 'c21', chargeDesc: 'Detention charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '18-Mar-26', containerNo: '-', rate: 650, currency: 'INR', chargeType: 'Self-Reimbursement' },
-      { id: 'c22', chargeDesc: 'Equipment charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 610, currency: 'INR', chargeType: 'Self-Reimbursement' },
+      { id: 'c20', chargeDesc: 'Registration charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '18-Mar-26', containerNo: '-', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '901', tpInvoiceDate: '18-03-2026', tpInvoiceValue: 590, basicValue: 500, cgst: 45, sgst: 45, igst: 0, tpVendorCode: 'VND003', tpVendorName: 'PQR Shipping Agency' },
+      { id: 'c21', chargeDesc: 'Detention charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '18-Mar-26', containerNo: '-', rate: 650, currency: 'USD', chargeType: 'Self-Reimbursement' },
+      { id: 'c22', chargeDesc: 'Equipment charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 610, currency: 'USD', chargeType: 'Self-Reimbursement' },
     ],
   },
   {
@@ -125,8 +125,8 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Jio', chargesClaimed: 2, totalAmount: 980, status: 'Pending - New',
     createdAt: '17-02-2026 17:10:00', asnNo: 'ASN004', workflowId: 'WF005',
     charges: [
-      { id: 'c23', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 490, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c24', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 490, currency: 'INR', chargeType: 'Incidental' },
+      { id: 'c23', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 490, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c24', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 490, currency: 'USD', chargeType: 'Incidental' },
     ],
   },
   // CLM009 — all 3 charge types in one claim
@@ -135,12 +135,12 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Petchem', chargesClaimed: 6, totalAmount: 3150, status: 'Pending - New',
     createdAt: '18-02-2026 09:00:00', asnNo: 'ASN002', workflowId: 'WF001',
     charges: [
-      { id: 'c25', chargeDesc: 'Port Handling Fee', chargeLevel: 'BL', blNo: 'BL003', blDate: '20-Mar-26', containerNo: '-', rate: 500, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c26', chargeDesc: 'Wharfage charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN004', rate: 350, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c27', chargeDesc: 'Freight recovery', chargeLevel: 'BL', blNo: 'BL003', blDate: '20-Mar-26', containerNo: '-', rate: 800, currency: 'INR', chargeType: 'Self-Reimbursement' },
-      { id: 'c28', chargeDesc: 'Survey charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN004', rate: 500, currency: 'INR', chargeType: 'Self-Reimbursement' },
-      { id: 'c29', chargeDesc: 'Inspection fees', chargeLevel: 'BL', blNo: 'BL003', blDate: '20-Mar-26', containerNo: '-', rate: 0, currency: 'INR', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: 'INV201', tpInvoiceDate: '20-03-2026', tpInvoiceValue: 590, basicValue: 500, cgst: 45, sgst: 45, igst: 0, tpVendorCode: 'VND004', tpVendorName: 'Global Inspection Ltd' },
-      { id: 'c30', chargeDesc: 'Fumigation charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN004', rate: 0, currency: 'INR', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: 'INV202', tpInvoiceDate: '20-03-2026', tpInvoiceValue: 413, basicValue: 350, cgst: 0, sgst: 0, igst: 63, tpVendorCode: 'VND005', tpVendorName: 'PestFree Services Pvt Ltd' },
+      { id: 'c25', chargeDesc: 'Port Handling Fee', chargeLevel: 'BL', blNo: 'BL003', blDate: '20-Mar-26', containerNo: '-', rate: 500, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c26', chargeDesc: 'Wharfage charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN004', rate: 350, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c27', chargeDesc: 'Freight recovery', chargeLevel: 'BL', blNo: 'BL003', blDate: '20-Mar-26', containerNo: '-', rate: 800, currency: 'USD', chargeType: 'Self-Reimbursement' },
+      { id: 'c28', chargeDesc: 'Survey charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN004', rate: 500, currency: 'USD', chargeType: 'Self-Reimbursement' },
+      { id: 'c29', chargeDesc: 'Inspection fees', chargeLevel: 'BL', blNo: 'BL003', blDate: '20-Mar-26', containerNo: '-', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: 'INV201', tpInvoiceDate: '20-03-2026', tpInvoiceValue: 590, basicValue: 500, cgst: 45, sgst: 45, igst: 0, tpVendorCode: 'VND004', tpVendorName: 'Global Inspection Ltd' },
+      { id: 'c30', chargeDesc: 'Fumigation charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN004', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: 'INV202', tpInvoiceDate: '20-03-2026', tpInvoiceValue: 413, basicValue: 350, cgst: 0, sgst: 0, igst: 63, tpVendorCode: 'VND005', tpVendorName: 'PestFree Services Pvt Ltd' },
     ],
   },
   // CLM010 — all 3 charge types in one claim
@@ -149,11 +149,11 @@ const DEMO_CLAIMS: ClaimRow[] = [
     business: 'Retail', chargesClaimed: 5, totalAmount: 2780, status: 'Pending - New',
     createdAt: '19-02-2026 11:20:00', asnNo: 'ASN003', workflowId: 'WF002',
     charges: [
-      { id: 'c31', chargeDesc: 'Seal charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN005', rate: 300, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c32', chargeDesc: 'Gate charges', chargeLevel: 'BL', blNo: 'BL004', blDate: '22-Mar-26', containerNo: '-', rate: 480, currency: 'INR', chargeType: 'Incidental' },
-      { id: 'c33', chargeDesc: 'THC recovery', chargeLevel: 'BL', blNo: 'BL004', blDate: '22-Mar-26', containerNo: '-', rate: 700, currency: 'INR', chargeType: 'Self-Reimbursement' },
-      { id: 'c34', chargeDesc: 'B/L amendment fees', chargeLevel: 'BL', blNo: 'BL004', blDate: '22-Mar-26', containerNo: '-', rate: 0, currency: 'INR', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: 'INV301', tpInvoiceDate: '22-03-2026', tpInvoiceValue: 826, basicValue: 700, cgst: 63, sgst: 63, igst: 0, tpVendorCode: 'VND006', tpVendorName: 'Shipping Line Agency Co.' },
-      { id: 'c35', chargeDesc: 'Customs exam fees', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN005', rate: 0, currency: 'INR', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: 'INV302', tpInvoiceDate: '22-03-2026', tpInvoiceValue: 472, basicValue: 400, cgst: 36, sgst: 36, igst: 0, tpVendorCode: 'VND007', tpVendorName: 'ClearFast Customs Pvt Ltd' },
+      { id: 'c31', chargeDesc: 'Seal charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN005', rate: 300, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c32', chargeDesc: 'Gate charges', chargeLevel: 'BL', blNo: 'BL004', blDate: '22-Mar-26', containerNo: '-', rate: 480, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c33', chargeDesc: 'THC recovery', chargeLevel: 'BL', blNo: 'BL004', blDate: '22-Mar-26', containerNo: '-', rate: 700, currency: 'USD', chargeType: 'Self-Reimbursement' },
+      { id: 'c34', chargeDesc: 'B/L amendment fees', chargeLevel: 'BL', blNo: 'BL004', blDate: '22-Mar-26', containerNo: '-', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: 'INV301', tpInvoiceDate: '22-03-2026', tpInvoiceValue: 826, basicValue: 700, cgst: 63, sgst: 63, igst: 0, tpVendorCode: 'VND006', tpVendorName: 'Shipping Line Agency Co.' },
+      { id: 'c35', chargeDesc: 'Customs exam fees', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN005', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: 'INV302', tpInvoiceDate: '22-03-2026', tpInvoiceValue: 472, basicValue: 400, cgst: 36, sgst: 36, igst: 0, tpVendorCode: 'VND007', tpVendorName: 'ClearFast Customs Pvt Ltd' },
     ],
   },
 ];
@@ -640,7 +640,7 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
               <th style={thStyle}>Vendor Code</th>
               <th style={thStyle}>Business</th>
               <th style={thStyle}>No. of Charges</th>
-              <th style={thStyle}>Total Amount (INR)</th>
+              <th style={thStyle}>Total Amount (USD)</th>
               <th style={thStyle}>Status</th>
               <th style={thStyle}>Created Date/Time</th>
               <th style={thStyle}>Workflow ID</th>

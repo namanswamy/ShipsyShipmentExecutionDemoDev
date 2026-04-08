@@ -438,7 +438,7 @@ const InvoiceGenerationView: React.FC<Props> = ({ taskName, data, onClose, onSub
                     })}
                   </tbody>
                 </table>
-                <TotalRow total={selfReimbTotal} currency={data.selfReimbCharges[0]?.currency || 'INR'} />
+                <TotalRow total={selfReimbTotal} currency={data.selfReimbCharges[0]?.currency || 'USD'} />
                 <div style={{ display: 'flex', gap: 14, padding: '16px 0', marginTop: 12, borderTop: '1px dashed #d0d0d0', alignItems: 'flex-end' }}>
                   <div style={{ flex: 1, maxWidth: 240 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: '#333', marginBottom: 4 }}>{data.vendorLabel} Invoice No.</div>
@@ -498,7 +498,7 @@ const InvoiceGenerationView: React.FC<Props> = ({ taskName, data, onClose, onSub
                     </div>
                   );
                 })}
-                <TotalRow total={tpTotal} currency={data.thirdPartyCharges[0]?.currency || 'INR'} />
+                <TotalRow total={tpTotal} currency={data.thirdPartyCharges[0]?.currency || 'USD'} />
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
                   <GenBtn enabled={checkedTP.size > 0} onClick={handleGenerateTP} />
                 </div>

@@ -187,7 +187,7 @@ const ThirdPartyChargeTable: React.FC<{ rows: TPChargeRow[] }> = ({ rows }) => {
       <div style={totalRowStyle}>
         <span style={{ fontSize: 12, fontWeight: 600, color: '#666' }}>Total:</span>
         <span style={{ background: '#F5F5F5', borderRadius: 4, padding: '6px 14px', fontSize: 14, fontWeight: 700, color: '#333', border: '1px solid #E0E0E0' }}>
-          {total.toFixed(2)} {rows[0]?.currency || 'INR'}
+          {total.toFixed(2)} {rows[0]?.currency || 'USD'}
         </span>
       </div>
     </div>
@@ -277,7 +277,7 @@ const ChargeConfirmationView: React.FC<Props> = ({ taskName, data, onClose, onSu
             {data.selfReimbCharges.length > 0 ? (
               <>
                 <ChargeTable rows={data.selfReimbCharges} showTax={false} />
-                <TotalRow total={selfReimbTotal} currency={data.selfReimbCharges[0]?.currency || 'INR'} />
+                <TotalRow total={selfReimbTotal} currency={data.selfReimbCharges[0]?.currency || 'USD'} />
               </>
             ) : (
               <div style={{ padding: 40, textAlign: 'center', color: '#999', fontSize: 13 }}>No self-reimbursement charges for this vendor.</div>
