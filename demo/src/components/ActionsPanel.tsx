@@ -104,10 +104,10 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
       const taskKey = ffIncidentalTask?.taskKey || '';
 
       if (selectedShipmentId === 'DEMO-INCIDENTAL-2' && taskKey) {
-        setStatuses({ ...demoStatuses, [taskKey]: 'Rework Required' });
+        setStatuses({ ...demoStatuses, [taskKey]: 'Rejected' });
         setIncidentalDrafts({ [taskKey]: createDemo2Draft() as IncidentalDraft });
       } else if (selectedShipmentId === 'DEMO-INCIDENTAL-3' && taskKey) {
-        setStatuses({ ...demoStatuses, [taskKey]: 'Not Approved' });
+        setStatuses({ ...demoStatuses, [taskKey]: 'Rejected' });
         setIncidentalDrafts({ [taskKey]: createDemo3Draft() as IncidentalDraft });
       } else if (selectedShipmentId === 'DEMO-INCIDENTAL-4' && taskKey) {
         setStatuses({ ...demoStatuses, [taskKey]: 'Approved' });
@@ -130,25 +130,19 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
 
       if (selectedShipmentId === 'DEMO-CHARGE-FF') {
         setPortDetails({ pol: 'SHANGHAI', pod: 'NHAVA SHEVA' });
-        // FF incidental approved + charge confirmation done → invoice generation is next
+        // FF incidental approved → FF Charge Confirmation & Invoicing is next
         const ffIncidental = freshTasks.find(t => t.name === 'FF Incidental Events');
-        const ffChargeConf = freshTasks.find(t => t.name === 'FF Charge Confirmation');
         if (ffIncidental) demoStatuses[ffIncidental.taskKey] = 'Approved';
-        if (ffChargeConf) demoStatuses[ffChargeConf.taskKey] = 'Done';
         setIncidentalDrafts(ffIncidental ? { [ffIncidental.taskKey]: createDemo4Draft() as IncidentalDraft } : {});
       } else {
         setPortDetails({ pol: 'BUSAN', pod: 'MUNDRA' });
-        // FF done through invoice, CHA incidental approved + charge confirmation done → CHA invoice generation is next
+        // FF done through merged task, CHA incidental approved → CHA Charge Confirmation & Invoice is next
         const ffIncidental = freshTasks.find(t => t.name === 'FF Incidental Events');
-        const ffChargeConf = freshTasks.find(t => t.name === 'FF Charge Confirmation');
-        const ffInvoice = freshTasks.find(t => t.name === 'FF Invoice Generation');
+        const ffMerged = freshTasks.find(t => t.name === 'FF Charge Confirmation & Invoicing');
         const chaIncidental = freshTasks.find(t => t.name === 'CHA Incidental Events');
-        const chaChargeConf = freshTasks.find(t => t.name === 'CHA Charge Confirmation');
         if (ffIncidental) demoStatuses[ffIncidental.taskKey] = 'Approved';
-        if (ffChargeConf) demoStatuses[ffChargeConf.taskKey] = 'Done';
-        if (ffInvoice) demoStatuses[ffInvoice.taskKey] = 'Done';
+        if (ffMerged) demoStatuses[ffMerged.taskKey] = 'Done';
         if (chaIncidental) demoStatuses[chaIncidental.taskKey] = 'Approved';
-        if (chaChargeConf) demoStatuses[chaChargeConf.taskKey] = 'Done';
       }
       setStatuses(demoStatuses);
     } else {

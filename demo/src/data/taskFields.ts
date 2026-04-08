@@ -25,11 +25,11 @@ export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[];
   ] },
 
   'Enter Package Details': { fields: [
-    { label: 'Package Type', value: '', type: 'dropdown', req: true, opts: ['Cartons', 'Pallets', 'Bags', 'Drums', 'Crates', 'Rolls'] },
-    { label: 'Number of Packages', value: '', type: 'number', req: true },
-    { label: 'Total Gross Weight (kg)', value: '', type: 'number', req: true },
-    { label: 'Total Volume (CBM)', value: '', type: 'number', req: false },
-    { label: 'Package Dimensions (L x W x H cm)', value: '', type: 'text', req: false },
+    { label: 'Package Type', value: '', type: 'dropdown', req: true, opts: ['Cartons', 'Pallets', 'Bags', 'Drums', 'Crates', 'Rolls'], note: 'container-row' },
+    { label: 'No. of Packages', value: '', type: 'number', req: true, note: 'container-row' },
+    { label: 'Gross Weight (kg)', value: '', type: 'number', req: true, note: 'container-row' },
+    { label: 'Volume (CBM)', value: '', type: 'number', req: false, note: 'container-row' },
+    { label: 'Dimensions (LxWxH cm)', value: '', type: 'text', req: false, note: 'container-row' },
   ] },
 
   'Enter Cargo Volume Details': { fields: [

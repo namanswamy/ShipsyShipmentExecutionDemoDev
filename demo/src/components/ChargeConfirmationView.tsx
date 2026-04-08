@@ -80,13 +80,14 @@ function gpoBidToRows(bid: Bid): ConfirmationChargeRow[] {
     // Parse USD amount from value like "USD 1500"
     const amtMatch = value.match(/(?:USD|INR)\s*([\d,.]+)/);
     const amt = amtMatch ? parseFloat(amtMatch[1].replace(/,/g, '')) : 0;
+    const priceNum = amt > 0 ? amt.toFixed(2) : value.replace(/[A-Z]{3}\s*/g, '').trim();
     rows.push({
       id: `gpo-${sno}`,
       chargeName: key,
       level: 'BL',
-      vendorPrice: value,
+      vendorPrice: priceNum,
       currency: bid.currency,
-      unitType: 'Lumpsum',
+      unitType: 'Per BL',
       units: '1.00',
       tax: '—',
       total: amt > 0 ? amt.toFixed(2) : value,

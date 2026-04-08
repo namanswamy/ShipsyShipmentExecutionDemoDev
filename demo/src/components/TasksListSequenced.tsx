@@ -7,10 +7,8 @@ import type { GPOResult } from './GPOTaskView';
 import IncidentalChargesView from './IncidentalChargesView';
 import type { IncidentalDraft } from './IncidentalChargesView';
 import MultiVendorWrapper, { isMultiVendorPersona, getDefaultVendorNames } from './MultiVendorWrapper';
-import ChargeConfirmationView from './ChargeConfirmationView';
-import type { ChargeConfirmationData, TPChargeRow } from './ChargeConfirmationView';
-import InvoiceGenerationView from './InvoiceGenerationView';
-import type { InvoiceGenerationData } from './InvoiceGenerationView';
+import ChargeInvoiceView from './ChargeInvoiceView';
+import type { ChargeInvoiceData, TPChargeRow } from './ChargeInvoiceView';
 import { getBidsForVendors } from '../data/bidData';
 
 const milestones = ['Drafts', 'Origin', 'In Transit', 'Destination'];
@@ -21,8 +19,7 @@ const STATUS_OPTS = [
   { v: 'Done', bg: '#D3FFEA', c: '#0F6E3C' },
   { v: 'Pending', bg: '#FFF3E0', c: '#E65100' },
   { v: 'Sent for Approval', bg: '#E3F2FD', c: '#1565C0' },
-  { v: 'Rework Required', bg: '#FFFED2', c: '#8B7000' },
-  { v: 'Not Approved', bg: '#FFD3D3', c: '#A00' },
+  { v: 'Rejected', bg: '#FFD3D3', c: '#A00' },
   { v: 'Approved', bg: '#D3FFEA', c: '#0F6E3C' },
   { v: 'Cancelled', bg: '#FFD3D3', c: '#A00' },
 ];
@@ -100,6 +97,7 @@ const TasksListSequenced: React.FC<Props> = ({
   onSpotNormalChange,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [l1RejectionRemarks, setL1RejectionRemarks] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Auto-dismiss toast after 3 seconds
@@ -120,7 +118,7 @@ const TasksListSequenced: React.FC<Props> = ({
   const currentActiveSeq = useMemo(() => {
     for (const t of allTasks) {
       const st = getStatus(t.taskKey);
-      if (st !== 'Done' && st !== 'Sent for Approval' && st !== 'Rework Required' && st !== 'Not Approved' && st !== 'Approved') return t.seq;
+      if (st !== 'Done' && st !== 'Sent for Approval' && st !== 'Rejected' && st !== 'Approved') return t.seq;
     }
     return Infinity;
   }, [allTasks, statuses]);
@@ -236,7 +234,19 @@ const TasksListSequenced: React.FC<Props> = ({
 
   // Handle L1 Approval submit
   const handleL1Submit = () => {
+    setL1RejectionRemarks('');
     handleSubmitTask(openTaskKey!);
+  };
+
+  // Handle L1 Rejection
+  const handleL1Reject = (remarks: string) => {
+    setL1RejectionRemarks(remarks);
+    const gpoTask = allTasks.find(t => t.name === 'Run Global Plan Optimizer');
+    const l1Task = allTasks.find(t => t.name === 'Approval of L1 Deviation');
+    if (gpoTask) setStatuses(prev => ({ ...prev, [gpoTask.taskKey]: 'Rejected' }));
+    if (l1Task) setStatuses(prev => ({ ...prev, [l1Task.taskKey]: 'Rejected' }));
+    setOpenTaskKey(null);
+    setToastMessage('L1 Deviation Rejected — GPO sent for Rework');
   };
 
   // Incidental task names
@@ -245,18 +255,13 @@ const TasksListSequenced: React.FC<Props> = ({
     'CFS Incidental Events', 'ICD Incidental Events', 'Transporter Incidental Events',
   ];
 
-  // Charge Confirmation task names
-  const CHARGE_CONFIRMATION_TASKS = [
-    'FF Charge Confirmation', 'CHA Charge Confirmation',
+  // Charge Confirmation & Invoicing task names
+  const CHARGE_INVOICE_TASKS = [
+    'FF Charge Confirmation & Invoicing', 'CHA Charge Confirmation & Invoicing',
   ];
 
-  // Invoice Generation task names
-  const INVOICE_GENERATION_TASKS = [
-    'FF Invoice Generation', 'CHA Invoice Generation',
-  ];
-
-  // Build charge confirmation data for a vendor type
-  const buildChargeConfirmationData = (vendorType: string): ChargeConfirmationData => {
+  // Build charge & invoice data for a vendor type
+  const buildChargeInvoiceData = (vendorType: string): ChargeInvoiceData => {
     // Get GPO bid for this vendor
     const vendorTypeMap: Record<string, string> = {
       'FF': 'Freight Forwarder', 'CHA': 'CHA', 'CFS': 'CFS', 'ICD': 'ICD', 'Transporter': 'Transporter',
@@ -274,6 +279,7 @@ const TasksListSequenced: React.FC<Props> = ({
     if (vendorType === 'FF') {
       return {
         vendorType: 'Freight Forwarder',
+        vendorLabel: 'FF',
         gpoBid: selectedBid,
         incidentalCharges: [
           { id: 'ic-1', chargeName: 'Loading charges', level: 'BL', vendorPrice: '800', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '18% GST', total: '944.00' },
@@ -292,6 +298,7 @@ const TasksListSequenced: React.FC<Props> = ({
     // CHA
     return {
       vendorType: 'CHA',
+      vendorLabel: 'CHA',
       gpoBid: selectedBid,
       incidentalCharges: [
         { id: 'ic-1', chargeName: 'Loading charges', level: 'BL', vendorPrice: '800', currency: 'INR', unitType: 'Per BL', units: '1.00', tax: '18% GST', total: '944.00' },
@@ -306,21 +313,6 @@ const TasksListSequenced: React.FC<Props> = ({
         { id: 'tp-2', chargeName: 'Registration charges', level: 'Container', vendorPrice: '400', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '472.00', invoiceNo: 'INV202', invoiceDate: '18-03-2026', basicValue: '400.00', cgst: '36.00', sgst: '36.00', igst: '', vendorCode: 'VND004', vendorName: 'Global Trade Solutions' },
         { id: 'tp-3', chargeName: 'Registration charges', level: 'Container', vendorPrice: '400', currency: 'INR', unitType: 'Per Container', units: '1.00', tax: '18% GST', total: '472.00', invoiceNo: 'INV203', invoiceDate: '18-03-2026', basicValue: '400.00', cgst: '36.00', sgst: '36.00', igst: '', vendorCode: 'VND004', vendorName: 'Global Trade Solutions' },
       ] as TPChargeRow[],
-    };
-  };
-
-  // Build invoice generation data — same as charge confirmation but TP charges are container-only
-  const buildInvoiceGenerationData = (vendorType: string): InvoiceGenerationData => {
-    const ccData = buildChargeConfirmationData(vendorType);
-    const vendorLabelMap: Record<string, string> = { 'FF': 'FF', 'CHA': 'CHA', 'CFS': 'CFS', 'ICD': 'ICD', 'Transporter': 'Transporter' };
-    return {
-      vendorType: ccData.vendorType,
-      vendorLabel: vendorLabelMap[vendorType] || vendorType,
-      gpoBid: ccData.gpoBid,
-      incidentalCharges: ccData.incidentalCharges,
-      selfReimbCharges: ccData.selfReimbCharges,
-      // Only container-level charges for third party in invoice generation
-      thirdPartyCharges: ccData.thirdPartyCharges.filter(c => c.level === 'Container'),
     };
   };
 
@@ -353,30 +345,22 @@ const TasksListSequenced: React.FC<Props> = ({
   if (openTaskKey && !isProcessing) {
     const task = allTasks.find(t => t.taskKey === openTaskKey);
     if (task) {
-      // Charge Confirmation tasks
-      if (CHARGE_CONFIRMATION_TASKS.includes(task.name)) {
-        const vendorType = task.name.replace(' Charge Confirmation', '');
-        const confirmationData = buildChargeConfirmationData(vendorType);
+      // Charge Confirmation & Invoicing tasks
+      if (CHARGE_INVOICE_TASKS.includes(task.name)) {
+        const vendorType = task.name.replace(' Charge Confirmation & Invoicing', '');
+        const chargeData = buildChargeInvoiceData(vendorType);
         return (
-          <ChargeConfirmationView
+          <ChargeInvoiceView
             taskName={task.name}
-            data={confirmationData}
+            data={chargeData}
             onClose={() => setOpenTaskKey(null)}
             onSubmit={() => handleSubmitTask(openTaskKey!)}
-          />
-        );
-      }
-
-      // Invoice Generation tasks
-      if (INVOICE_GENERATION_TASKS.includes(task.name)) {
-        const vendorType = task.name.replace(' Invoice Generation', '');
-        const invoiceData = buildInvoiceGenerationData(vendorType);
-        return (
-          <InvoiceGenerationView
-            taskName={task.name}
-            data={invoiceData}
-            onClose={() => setOpenTaskKey(null)}
-            onSubmit={() => handleSubmitTask(openTaskKey!)}
+            onStatusChange={(status) => {
+              if (status === 'Pending') {
+                setStatuses(prev => ({ ...prev, [openTaskKey!]: 'Pending' }));
+              }
+              // Done is handled by handleSubmitTask via onSubmit
+            }}
           />
         );
       }
@@ -446,6 +430,11 @@ const TasksListSequenced: React.FC<Props> = ({
 
       // GPO Task — show bid cards
       if (task.name === 'Run Global Plan Optimizer') {
+        const gpoStatus = getStatus(task.taskKey);
+        const isRework = gpoStatus === 'Rejected';
+        const isInProgress = gpoStatus === 'In Progress';
+        // Rework mode: show banner but read-only. In Progress after rework: editable.
+        const gpoReadOnly = isRework && !isInProgress;
         return (
           <GPOTaskView
             selectedVendors={vendorSelections}
@@ -453,7 +442,19 @@ const TasksListSequenced: React.FC<Props> = ({
             pod={portDetails.pod}
             isSpot={isSpot}
             onClose={() => setOpenTaskKey(null)}
-            onSubmit={handleGPOSubmit}
+            onSubmit={(result) => {
+              // On re-submit after rework, reset L1
+              if (l1RejectionRemarks) {
+                const l1Task = allTasks.find(t => t.name === 'Approval of L1 Deviation');
+                if (l1Task) setStatuses(prev => ({ ...prev, [l1Task.taskKey]: 'Not Started' }));
+                setL1RejectionRemarks('');
+              }
+              handleGPOSubmit(result);
+            }}
+            readOnly={gpoReadOnly}
+            previousResult={isRework ? gpoResult : undefined}
+            rejectionRemarks={l1RejectionRemarks || undefined}
+            reworkMode={isRework}
           />
         );
       }
@@ -470,6 +471,7 @@ const TasksListSequenced: React.FC<Props> = ({
             onSubmit={handleL1Submit}
             readOnly={true}
             previousResult={gpoResult}
+            onReject={handleL1Reject}
           />
         );
       }

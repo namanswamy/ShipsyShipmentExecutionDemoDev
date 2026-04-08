@@ -149,7 +149,6 @@ const ApproverCell: React.FC<{ action?: string; remark?: string }> = ({ action, 
   const colors: Record<string, { bg: string; c: string }> = {
     Approved: { bg: '#D3FFEA', c: '#0F6E3C' },
     Rejected: { bg: '#FFD3D3', c: '#A00' },
-    Rework: { bg: '#FFFED2', c: '#8B7000' },
   };
   const s = colors[action] || colors.Rework;
   return (

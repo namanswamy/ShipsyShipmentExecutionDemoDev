@@ -113,22 +113,22 @@ const BidCard: React.FC<Props> = ({ bid, selected, onClick, readOnly, dimmed, on
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '5px 20px',
         background: bottomBarBg, borderTop: isSpot ? '1px solid #FFE0B2' : '1px solid #E8E8E8', fontSize: 11,
-        color: '#666', flexWrap: 'wrap',
+        color: '#666', overflow: 'hidden', whiteSpace: 'nowrap',
       }}>
         <span style={{
           background: rankStyle.bg, color: rankStyle.c,
-          padding: '2px 8px', borderRadius: 3, fontWeight: 600, fontSize: 11,
+          padding: '2px 8px', borderRadius: 3, fontWeight: 600, fontSize: 11, flexShrink: 0,
         }}>
           Rank {bid.rank}
         </span>
-        <span>FF : {bid.vendorName}</span>
-        {bid.carrierName !== '-' && <span>Carrier : {bid.carrierName}</span>}
-        {bid.containerSize !== '-' && <span>Container Size : {bid.containerSize}</span>}
-        {bid.containerType !== '-' && <span>Container Type : {bid.containerType}</span>}
-        {bid.transitDays > 0 && <span>Transit Days {bid.transitDays}</span>}
+        <span style={{ flexShrink: 0 }}>{bid.vendorType} : {bid.vendorName}</span>
+        {bid.carrierName !== '-' && <span style={{ flexShrink: 0 }}>Carrier : {bid.carrierName}</span>}
+        {bid.containerSize !== '-' && <span style={{ flexShrink: 0 }}>Container Size : {bid.containerSize}</span>}
+        {bid.containerType !== '-' && <span style={{ flexShrink: 0 }}>Container Type : {bid.containerType}</span>}
+        {bid.transitDays > 0 && <span style={{ flexShrink: 0 }}>Transit Days {bid.transitDays}</span>}
         <span
           onClick={e => { e.stopPropagation(); onViewDetails?.(); }}
-          style={{ color: '#006EC3', cursor: 'pointer', fontWeight: 600 }}
+          style={{ color: '#006EC3', cursor: 'pointer', fontWeight: 600, marginLeft: 'auto', flexShrink: 0 }}
         >
           View Details
         </span>

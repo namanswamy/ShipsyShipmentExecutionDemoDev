@@ -25,7 +25,7 @@ interface ChargeLineItem {
   igst?: number;
   tpVendorCode?: string;
   tpVendorName?: string;
-  action?: 'Approved' | 'Rejected' | 'Rework' | '';
+  action?: 'Approved' | 'Rejected' | '';
   remark?: string;
 }
 
@@ -230,7 +230,7 @@ const RemarkPopup: React.FC<{
         boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
       }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: '#333', marginBottom: 12 }}>
-          {action === 'Approved' ? 'Approve' : action === 'Rejected' ? 'Reject' : 'Rework'} — Remarks
+          {action === 'Approved' ? 'Approve' : 'Reject'} — Remarks
         </div>
         <textarea
           className="field-input"
@@ -276,7 +276,7 @@ const InlineApprovalDetail: React.FC<{
   const [activeTab, setActiveTab] = useState(chargeTypes[0] || 'Incidental');
   const activeCharges = charges.filter(c => c.chargeType === activeTab);
 
-  const handleAction = (idx: number, action: 'Approved' | 'Rejected' | 'Rework') => {
+  const handleAction = (idx: number, action: 'Approved' | 'Rejected') => {
     setPopup({ idx, action });
   };
 
@@ -284,7 +284,7 @@ const InlineApprovalDetail: React.FC<{
     if (popup) {
       const globalIdx = charges.indexOf(activeCharges[popup.idx]);
       const updated = [...charges];
-      updated[globalIdx] = { ...updated[globalIdx], action: popup.action as 'Approved' | 'Rejected' | 'Rework', remark };
+      updated[globalIdx] = { ...updated[globalIdx], action: popup.action as 'Approved' | 'Rejected', remark };
       setCharges(updated);
     }
     setPopup(null);
@@ -299,10 +299,8 @@ const InlineApprovalDetail: React.FC<{
     const allActioned = charges.every(c => c.action);
     if (!allActioned) { alert('Please action all charge items before submitting.'); return; }
     const allApproved = charges.every(c => c.action === 'Approved');
-    const allRework = charges.every(c => c.action === 'Rework');
     let newStatus = 'Done';
     if (allApproved) newStatus = 'Approved';
-    else if (allRework) newStatus = 'Send for Rework';
     onUpdateClaim({ ...claim, charges, status: newStatus });
     onClose();
   };
@@ -436,8 +434,8 @@ const InlineApprovalDetail: React.FC<{
                       {c.action ? (
                         <span style={{
                           padding: '4px 10px', borderRadius: 3, fontSize: 10, fontWeight: 600,
-                          background: c.action === 'Approved' ? '#D3FFEA' : c.action === 'Rejected' ? '#FFD3D3' : '#FFFED2',
-                          color: c.action === 'Approved' ? '#0F6E3C' : c.action === 'Rejected' ? '#A00' : '#8B7000',
+                          background: c.action === 'Approved' ? '#D3FFEA' : '#FFD3D3',
+                          color: c.action === 'Approved' ? '#0F6E3C' : '#A00',
                         }}>
                           {c.action}
                         </span>
@@ -445,7 +443,6 @@ const InlineApprovalDetail: React.FC<{
                         <div style={{ display: 'flex', gap: 4 }}>
                           <button style={actionBtn('#D3FFEA')} onClick={() => handleAction(idx, 'Approved')}>Approve</button>
                           <button style={actionBtn('#FFD3D3')} onClick={() => handleAction(idx, 'Rejected')}>Reject</button>
-                          <button style={actionBtn('#FFFED2')} onClick={() => handleAction(idx, 'Rework')}>Rework</button>
                         </div>
                       )}
                     </td>
@@ -663,7 +660,7 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
                   <td style={tdStyle}>{c.totalAmount}</td>
                   <td style={{
                     ...tdStyle, fontWeight: 600, fontSize: 10,
-                    color: c.status.includes('Approved') ? '#0F6E3C' : c.status.includes('Rework') ? '#8B7000' : c.status === 'Done' ? '#0F6E3C' : '#1565C0',
+                    color: c.status.includes('Approved') ? '#0F6E3C' : c.status.includes('Rejected') ? '#A00' : c.status === 'Done' ? '#0F6E3C' : '#1565C0',
                   }}>{c.status}</td>
                   <td style={tdStyle}>{c.createdAt}</td>
                   <td style={tdStyle}>{c.workflowId}</td>

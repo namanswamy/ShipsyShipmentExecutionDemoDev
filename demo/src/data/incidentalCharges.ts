@@ -44,7 +44,7 @@ export interface BLRow {
   tpVendorCode: string;
   tpVendorName: string;
   // Approver response
-  approverAction?: 'Approved' | 'Rejected' | 'Rework' | '';
+  approverAction?: 'Approved' | 'Rejected' | '';
   approverRemark?: string;
 }
 
@@ -68,7 +68,7 @@ export interface ContainerRow {
   tpVendorCode: string;
   tpVendorName: string;
   // Approver response
-  approverAction?: 'Approved' | 'Rejected' | 'Rework' | '';
+  approverAction?: 'Approved' | 'Rejected' | '';
   approverRemark?: string;
 }
 
@@ -131,7 +131,7 @@ export function createDemo2Draft() {
       },
       {
         chargeName: 'Documentation charges', chargeType: 'Self-Reimbursement' as ChargeType, chargeLevel: 'BL' as ChargeLevel,
-        blRows: [{ id: 'bl1', blNo: 'BL001', blDate: '12-03-2026', selected: true, rate: '1200', currency: 'INR', attachment: '', tpInvoiceNo: '', tpInvoiceDate: '', tpInvoiceValue: '', basicValue: '', cgst: '', sgst: '', igst: '', tpVendorCode: '', tpVendorName: '', approverAction: 'Rework' as const, approverRemark: 'Please attach supporting invoice document' }],
+        blRows: [{ id: 'bl1', blNo: 'BL001', blDate: '12-03-2026', selected: true, rate: '1200', currency: 'INR', attachment: '', tpInvoiceNo: '', tpInvoiceDate: '', tpInvoiceValue: '', basicValue: '', cgst: '', sgst: '', igst: '', tpVendorCode: '', tpVendorName: '', approverAction: 'Rejected' as const, approverRemark: 'Please attach supporting invoice document' }],
         containerRows: [],
       },
       {
@@ -145,7 +145,7 @@ export function createDemo2Draft() {
   };
 }
 
-// Demo 3: All Rejected / Not Approved
+// Demo 3: All Rejected
 export function createDemo3Draft() {
   return {
     selectedCharges: [

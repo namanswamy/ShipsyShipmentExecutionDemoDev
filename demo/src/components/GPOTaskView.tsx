@@ -22,6 +22,9 @@ interface Props {
   onSubmit: (result: GPOResult) => void;
   readOnly?: boolean;
   previousResult?: GPOResult | null;
+  onReject?: (remarks: string) => void;
+  rejectionRemarks?: string;
+  reworkMode?: boolean; // true = show banner but read-only until status changed
 }
 
 // View Details Modal
@@ -119,19 +122,19 @@ const NormalRefCard: React.FC<{ bid: Bid; onViewDetails: () => void }> = ({ bid,
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '5px 20px',
         background: '#EDEDED', borderTop: '1px solid #ddd', fontSize: 11, color: '#888',
-        flexWrap: 'wrap',
+        overflow: 'hidden', whiteSpace: 'nowrap',
       }}>
-        <span style={{ background: '#E8F5E9', color: '#2E7D32', padding: '2px 8px', borderRadius: 3, fontWeight: 600 }}>
+        <span style={{ background: '#E8F5E9', color: '#2E7D32', padding: '2px 8px', borderRadius: 3, fontWeight: 600, flexShrink: 0 }}>
           Rank 1
         </span>
-        <span>FF : {bid.vendorName}</span>
-        {bid.carrierName !== '-' && <span>Carrier : {bid.carrierName}</span>}
-        {bid.containerSize !== '-' && <span>Container Size : {bid.containerSize}</span>}
-        {bid.containerType !== '-' && <span>Container Type : {bid.containerType}</span>}
-        {bid.transitDays > 0 && <span>Transit Days {bid.transitDays}</span>}
+        <span style={{ flexShrink: 0 }}>{bid.vendorType} : {bid.vendorName}</span>
+        {bid.carrierName !== '-' && <span style={{ flexShrink: 0 }}>Carrier : {bid.carrierName}</span>}
+        {bid.containerSize !== '-' && <span style={{ flexShrink: 0 }}>Container Size : {bid.containerSize}</span>}
+        {bid.containerType !== '-' && <span style={{ flexShrink: 0 }}>Container Type : {bid.containerType}</span>}
+        {bid.transitDays > 0 && <span style={{ flexShrink: 0 }}>Transit Days {bid.transitDays}</span>}
         <span
           onClick={e => { e.stopPropagation(); onViewDetails(); }}
-          style={{ color: '#006EC3', cursor: 'pointer', fontWeight: 600 }}
+          style={{ color: '#006EC3', cursor: 'pointer', fontWeight: 600, marginLeft: 'auto', flexShrink: 0 }}
         >
           View Details
         </span>
@@ -140,7 +143,9 @@ const NormalRefCard: React.FC<{ bid: Bid; onViewDetails: () => void }> = ({ bid,
   );
 };
 
-const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClose, onSubmit, readOnly, previousResult }) => {
+const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClose, onSubmit, readOnly, previousResult, onReject, rejectionRemarks, reworkMode }) => {
+  const [showRejectPopup, setShowRejectPopup] = useState(false);
+  const [rejectRemark, setRejectRemark] = useState('');
   // Generate bids
   const allBids = useMemo(
     () => previousResult?.allBids || (isSpot
@@ -266,7 +271,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
         <div className="task-detail-actions">
           {readOnly ? (
             <>
-              <button className="btn-reject" onClick={onClose}>Reject</button>
+              <button className="btn-reject" onClick={() => onReject ? setShowRejectPopup(true) : onClose()}>Reject</button>
               <button className="btn-approve" onClick={() => onSubmit({
                 selectedBids, totalBidAmount, totalDeviation, deviationReason, allBids, isSpot, normalRank1Bids,
               })}>Approve</button>
@@ -308,6 +313,21 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
       </div>
 
       {/* Body */}
+      {/* Rejection remarks banner */}
+      {rejectionRemarks && (
+        <div style={{
+          margin: '0 16px', padding: '10px 16px', background: '#FFF3E0', border: '1px solid #FFCC80',
+          borderRadius: 6, display: 'flex', alignItems: 'flex-start', gap: 10,
+        }}>
+          <span style={{ fontSize: 16, lineHeight: '1' }}>&#9888;</span>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#E65100', marginBottom: 2 }}>L1 Deviation Rejected</div>
+            <div style={{ fontSize: 11, color: '#333' }}>Remarks: {rejectionRemarks}</div>
+            {reworkMode && <div style={{ fontSize: 10, color: '#999', marginTop: 4 }}>Change status to "In Progress" to re-select bids.</div>}
+          </div>
+        </div>
+      )}
+
       <div className="task-detail-body" style={{ maxHeight: 'calc(100vh - 340px)', overflowY: 'auto' }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 12 }}>
           {isSpot ? 'Spot Bid Details' : 'Bid Details'} — {activeVendorTab}
@@ -426,6 +446,41 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
               >
                 Submit
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Reject remarks popup */}
+      {showRejectPopup && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.4)', zIndex: 50,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 8, padding: 24, width: 420,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#333', marginBottom: 4 }}>Reject L1 Deviation</div>
+            <div style={{ fontSize: 12, color: '#999', marginBottom: 16 }}>Please provide a reason for rejecting the deviation.</div>
+            <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>
+              Reason for Rejection <span style={{ color: '#E53935' }}>*</span>
+            </div>
+            <textarea
+              className="field-input"
+              value={rejectRemark}
+              onChange={e => setRejectRemark(e.target.value)}
+              placeholder="Enter rejection remarks..."
+              style={{ marginBottom: 20, height: 80, padding: '8px 10px', resize: 'vertical' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button className="btn-reject" onClick={() => { setShowRejectPopup(false); setRejectRemark(''); }} style={{ border: '1px solid #999', color: '#333' }}>Cancel</button>
+              <button
+                className="btn-submit"
+                onClick={() => { if (rejectRemark.trim()) { onReject?.(rejectRemark); setShowRejectPopup(false); setRejectRemark(''); } }}
+                style={{ opacity: rejectRemark.trim() ? 1 : 0.5, background: '#E53935' }}
+                disabled={!rejectRemark.trim()}
+              >Reject</button>
             </div>
           </div>
         </div>
