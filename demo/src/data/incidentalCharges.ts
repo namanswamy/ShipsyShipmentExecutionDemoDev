@@ -10,6 +10,34 @@ export interface ChargeDefinition {
   level: ChargeLevel;
 }
 
+// SAC code mapping for each charge (displayed in detail tables and approver screen)
+export const SAC_CODES: Record<string, string> = {
+  'Loading charges': '9965',
+  'Storage charges': '9967',
+  'Storage Fees': '9967',
+  'Documentation charges': '9971',
+  'Special equipment charges': '9973',
+  'Agency charges': '9985',
+  'License charges': '9991',
+  'Registration charges': '9983',
+  'Transport Fee': '9965',
+  'Handling Charges': '9986',
+  'Detention charges': '9967',
+  'Equipment charges': '9973',
+  'Labelling fees': '9988',
+  'Port Handling Fee': '9966',
+  'Wharfage charges': '9969',
+  'Freight recovery': '9965',
+  'Survey charges': '9983',
+  'Inspection fees': '9983',
+  'Fumigation charges': '9985',
+  'Seal charges': '9988',
+  'Gate charges': '9969',
+  'THC recovery': '9966',
+  'B/L amendment fees': '9971',
+  'Customs exam fees': '9984',
+};
+
 export const CHARGE_LIST: ChargeDefinition[] = [
   { name: 'Loading charges', type: 'Incidental', level: 'BL' },
   { name: 'Storage charges', type: 'Incidental', level: 'Container' },
@@ -100,6 +128,25 @@ export const INCIDENTAL_RATES: Record<string, { blRate: number; containerRate: n
   'Storage charges': { blRate: 1200, containerRate: 500 },
 };
 
+// CHA-specific pre-filled rates for Self-Reimbursement (editable, max = pre-filled value)
+export const CHA_SELF_REIMB_RATES: Record<string, { blRate: number; containerRate: number }> = {
+  'Documentation charges': { blRate: 1500, containerRate: 0 },
+  'Special equipment charges': { blRate: 0, containerRate: 750 },
+};
+
+// CHA-specific pre-filled data for Third-Party Reimbursement (editable, max = pre-filled basicValue)
+export const CHA_THIRD_PARTY_PREFILL: Record<string, {
+  blPrefill?: { basicValue: string; cgst: string; sgst: string; igst: string; tpInvoiceNo: string; tpInvoiceDate: string; tpVendorCode: string; tpVendorName: string };
+  containerPrefill?: { basicValue: string; cgst: string; sgst: string; igst: string; tpInvoiceNo: string; tpInvoiceDate: string; tpVendorCode: string; tpVendorName: string };
+}> = {
+  'Agency charges': {
+    blPrefill: { basicValue: '600', cgst: '54', sgst: '54', igst: '', tpInvoiceNo: 'INV401', tpInvoiceDate: '2026-03-14', tpVendorCode: 'VND003', tpVendorName: 'PQR Shipping Agency' },
+  },
+  'License charges': {
+    containerPrefill: { basicValue: '350', cgst: '', sgst: '', igst: '63', tpInvoiceNo: 'INV501', tpInvoiceDate: '2026-03-16', tpVendorCode: 'VND002', tpVendorName: 'XYZ Freight Services' },
+  },
+};
+
 // Third party vendor codes
 export const TP_VENDOR_OPTIONS = [
   { code: 'VND001', name: 'ABC Logistics Pvt Ltd' },
@@ -115,7 +162,7 @@ export const TP_VENDOR_OPTIONS = [
 
 // ── Pre-filled demo incidental drafts for Demo shipments ──
 
-// Demo 2: Mixed approver response (Approved + Rejected + Rework)
+// Demo 2: Mixed approver response (Approved + Rejected)
 export function createDemo2Draft() {
   return {
     selectedCharges: [

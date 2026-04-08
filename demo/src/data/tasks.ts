@@ -29,7 +29,7 @@ export const tasks: Task[] = [
   {id:1,name:"Select Mode Of Shipment",org:"Shipper",code:"SMT25",team:"Ops",ms:"Drafts",assignee:"Reliance",approved:false,fields:[
     {label:"Mode",code:"SMF87",value:"FCL",type:"dropdown",req:true,opts:["FCL","LCL","Bulk","Break Bulk"],defaultVal:"FCL"},
     {label:"Incoterm",code:"SMF88",value:"EXW",type:"dropdown",req:true,opts:["EXW","FCA","CPT","CIP","DAP","DPU","DDP","FAS","FOB","CFR","CIF"],defaultVal:"EXW"},
-    {label:"Spot / Normal",value:"Normal",type:"dropdown",req:true,opts:["Spot","Normal"],defaultVal:"Normal",note:"NEW"},
+    {label:"Spot / Tender",value:"Tender",type:"dropdown",req:true,opts:["Spot","Tender"],defaultVal:"Tender",note:"NEW"},
   ]},
   {id:2,name:"Select Port Details",org:"Shipper",code:"SMT7",team:"Ops",ms:"Drafts",assignee:"Reliance",approved:false,fields:[
     {label:"Place of Receipt at Origin",code:"SMF103",value:"",type:"dropdown",req:true,opts:["Kutno","Pipavav","ICD/CFS Chennai","Nhava Sheva","Songkhla","Salvador, BA","Santos, SP","Vizagapatnam","Lat Krabang","Penang Port","Dadri (Greater Noida)","Fremantle","Chittagong","Legnickie Pole, Poland","Manaus, AM","Allcargo Global Logistics Limited (CFS)","Copenhagen","Rio de Janeiro, RJ","Paranagua, PR","Hong Kong"]},
@@ -45,7 +45,7 @@ export const tasks: Task[] = [
     {label:"Container Weight Unit",code:"SMF14",value:"",type:"dropdown",req:false,opts:["KG","MT","LBS"],note:"container-row"},
   ]},
   {id:4,name:"Vendor Selection",org:"Shipper",code:"TBD",team:"Ops",ms:"Drafts",assignee:"Reliance",approved:false,isNew:true,fields:[
-    {label:"Vendor Selection",value:"",type:"addmore",req:true,opts:["Freight Forwarder","Shipping Line","CHA","CFS","ICD","Break Bulk Vendor","Surveyor","Transporter"],note:"+ Add More for multi-value"},
+    {label:"Vendor Selection",value:"",type:"addmore",req:true,opts:["Freight Forwarder","Shipping Line","CHA","CFS","ICD","Break Bulk Vendor","Surveyor","Transporter","Inter Carting"],note:"+ Add More for multi-value"},
     {label:"Segment",value:"",type:"dropdown",req:false,opts:["DPD","DPD CFS","Non DPD"],note:"If CFS/ICD selected"},
     {label:"Category",value:"",type:"dropdown",req:false,opts:["General In-gauge","General Out-gauge","Haz cargo","Reefer"],note:"If CFS/ICD selected"},
     {label:"Destuff Indicator",value:"",type:"dropdown",req:false,opts:["Loaded","Destuffed"],note:"If CFS/ICD selected"},
@@ -270,13 +270,13 @@ export interface ShipmentData {
   carrierLogo?: string;
   apiBadge?: string;
   apiBadgeType?: 'success' | 'error';
-  spotNormal?: 'Spot' | 'Normal';
+  spotNormal?: 'Spot' | 'Tender';
 }
 
 export const shipments: ShipmentData[] = [
   {
-    id: "SEHR38534",
-    masterReferenceNumber: "SEHR38534",
+    id: "ASN-0001",
+    masterReferenceNumber: "ASN-0001",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -297,8 +297,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 2,
   },
   {
-    id: "SEHR38402",
-    masterReferenceNumber: "SEHR38402",
+    id: "ASN-0002",
+    masterReferenceNumber: "ASN-0002",
     mode: "FCL",
     type: "Import",
     incoterm: "EXW",
@@ -320,8 +320,8 @@ export const shipments: ShipmentData[] = [
     carrierLogo: "MSC",
   },
   {
-    id: "SEHR38381",
-    masterReferenceNumber: "SEHR38381",
+    id: "ASN-0003",
+    masterReferenceNumber: "ASN-0003",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -343,8 +343,8 @@ export const shipments: ShipmentData[] = [
     carrierLogo: "COSCO",
   },
   {
-    id: "SEHR38491",
-    masterReferenceNumber: "SEHR38491",
+    id: "ASN-0004",
+    masterReferenceNumber: "ASN-0004",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -369,8 +369,8 @@ export const shipments: ShipmentData[] = [
   },
   // ── Pre-configured Spot shipments (Task 1 done) ──
   {
-    id: "SEHR38490",
-    masterReferenceNumber: "SEHR38490",
+    id: "ASN-0005",
+    masterReferenceNumber: "ASN-0005",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -393,8 +393,8 @@ export const shipments: ShipmentData[] = [
     spotNormal: "Spot",
   },
   {
-    id: "SEHR38489",
-    masterReferenceNumber: "SEHR38489",
+    id: "ASN-0006",
+    masterReferenceNumber: "ASN-0006",
     mode: "LCL",
     type: "Export",
     incoterm: "EXW",
@@ -417,8 +417,8 @@ export const shipments: ShipmentData[] = [
   },
   // ── Pre-configured Normal shipments (Task 1 done) ──
   {
-    id: "SEHR38488",
-    masterReferenceNumber: "SEHR38488",
+    id: "ASN-0007",
+    masterReferenceNumber: "ASN-0007",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -438,11 +438,11 @@ export const shipments: ShipmentData[] = [
     tasksDueTodayCount: 0,
     tasksOverdueCount: 0,
     carrierLogo: "COSCO",
-    spotNormal: "Normal",
+    spotNormal: "Tender",
   },
   {
-    id: "SEHR38486",
-    masterReferenceNumber: "SEHR38486",
+    id: "ASN-0008",
+    masterReferenceNumber: "ASN-0008",
     mode: "AIR",
     type: "Import",
     incoterm: "CPT",
@@ -461,11 +461,11 @@ export const shipments: ShipmentData[] = [
     tasksTotal: 16,
     tasksDueTodayCount: 2,
     tasksOverdueCount: 0,
-    spotNormal: "Normal",
+    spotNormal: "Tender",
   },
   {
-    id: "SEHR38533",
-    masterReferenceNumber: "SEHR38533",
+    id: "ASN-0009",
+    masterReferenceNumber: "ASN-0009",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -486,8 +486,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 2,
   },
   {
-    id: "SEHR38532",
-    masterReferenceNumber: "SEHR38532",
+    id: "ASN-0010",
+    masterReferenceNumber: "ASN-0010",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -508,8 +508,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 2,
   },
   {
-    id: "SEHR38526",
-    masterReferenceNumber: "SEHR38526",
+    id: "ASN-0011",
+    masterReferenceNumber: "ASN-0011",
     mode: "FCL",
     type: "Export",
     incoterm: "FAS",
@@ -530,8 +530,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 4,
   },
   {
-    id: "SEHR38525",
-    masterReferenceNumber: "SEHR38525",
+    id: "ASN-0012",
+    masterReferenceNumber: "ASN-0012",
     mode: "FCL",
     type: "Export",
     incoterm: "FAS",
@@ -552,8 +552,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "SEHR38519",
-    masterReferenceNumber: "SEHR38519",
+    id: "ASN-0013",
+    masterReferenceNumber: "ASN-0013",
     mode: "LCL",
     type: "Import",
     incoterm: "CIF",
@@ -574,8 +574,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "SEHR38504",
-    masterReferenceNumber: "SEHR38504",
+    id: "ASN-0014",
+    masterReferenceNumber: "ASN-0014",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -597,8 +597,8 @@ export const shipments: ShipmentData[] = [
     carrierLogo: "MSC",
   },
   {
-    id: "SEHR38487",
-    masterReferenceNumber: "SEHR38487",
+    id: "ASN-0015",
+    masterReferenceNumber: "ASN-0015",
     mode: "AIR",
     type: "Import",
     incoterm: "DAP",
@@ -619,8 +619,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "SEHR38471",
-    masterReferenceNumber: "SEHR38471",
+    id: "ASN-0016",
+    masterReferenceNumber: "ASN-0016",
     mode: "FCL",
     type: "Export",
     incoterm: "FOB",
@@ -642,8 +642,8 @@ export const shipments: ShipmentData[] = [
     carrierLogo: "COSCO",
   },
   {
-    id: "SEHR38460",
-    masterReferenceNumber: "SEHR38460",
+    id: "ASN-0017",
+    masterReferenceNumber: "ASN-0017",
     mode: "LCL",
     type: "Import",
     incoterm: "CIF",
@@ -664,8 +664,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 1,
   },
   {
-    id: "SEHR38445",
-    masterReferenceNumber: "SEHR38445",
+    id: "ASN-0018",
+    masterReferenceNumber: "ASN-0018",
     mode: "AIR",
     type: "Import",
     incoterm: "CPT",
@@ -686,8 +686,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "SEHR38430",
-    masterReferenceNumber: "SEHR38430",
+    id: "ASN-0019",
+    masterReferenceNumber: "ASN-0019",
     mode: "Break Bulk",
     type: "Import",
     incoterm: "FOB",
@@ -708,8 +708,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "SEHR38400",
-    masterReferenceNumber: "SEHR38400",
+    id: "ASN-0020",
+    masterReferenceNumber: "ASN-0020",
     mode: "FCL",
     type: "Import",
     incoterm: "DDP",
@@ -731,8 +731,8 @@ export const shipments: ShipmentData[] = [
   },
   // ── Demo Test Shipment Incidental Tasks ──
   {
-    id: "DEMO-INCIDENTAL-1",
-    masterReferenceNumber: "DEMO-INCIDENTAL-1",
+    id: "ASN-0021",
+    masterReferenceNumber: "ASN-0021",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -753,8 +753,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "DEMO-INCIDENTAL-2",
-    masterReferenceNumber: "DEMO-INCIDENTAL-2",
+    id: "ASN-0022",
+    masterReferenceNumber: "ASN-0022",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -775,8 +775,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "DEMO-INCIDENTAL-3",
-    masterReferenceNumber: "DEMO-INCIDENTAL-3",
+    id: "ASN-0023",
+    masterReferenceNumber: "ASN-0023",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -797,8 +797,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "DEMO-INCIDENTAL-4",
-    masterReferenceNumber: "DEMO-INCIDENTAL-4",
+    id: "ASN-0024",
+    masterReferenceNumber: "ASN-0024",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -820,8 +820,8 @@ export const shipments: ShipmentData[] = [
   },
   // ── Demo Charge Confirmation Shipments ──
   {
-    id: "DEMO-CHARGE-FF",
-    masterReferenceNumber: "DEMO-CHARGE-FF",
+    id: "ASN-0025",
+    masterReferenceNumber: "ASN-0025",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",
@@ -842,8 +842,8 @@ export const shipments: ShipmentData[] = [
     tasksOverdueCount: 0,
   },
   {
-    id: "DEMO-CHARGE-CHA",
-    masterReferenceNumber: "DEMO-CHARGE-CHA",
+    id: "ASN-0026",
+    masterReferenceNumber: "ASN-0026",
     mode: "FCL",
     type: "Import",
     incoterm: "FOB",

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { SAC_CODES } from '../data/incidentalCharges';
 
 // ════════════════════════════════════════════════════
 // Types
@@ -34,6 +35,7 @@ interface ClaimRow {
   vendorType: string;
   vendorName: string;
   vendorCode: string;
+  stateOfOperation: string;
   business: string;
   chargesClaimed: number;
   totalAmount: number;
@@ -51,7 +53,7 @@ interface ClaimRow {
 const DEMO_CLAIMS: ClaimRow[] = [
   {
     claimId: 'CLM001', vendorType: 'FF', vendorName: 'ABC Logistics', vendorCode: 'V001',
-    business: 'Petchem', chargesClaimed: 7, totalAmount: 1700, status: 'Pending - New',
+    stateOfOperation: 'Maharashtra', business: 'Petchem', chargesClaimed: 7, totalAmount: 1700, status: 'Pending',
     createdAt: '10-02-2026 11:50:20', asnNo: 'ASN001', workflowId: 'WF001',
     charges: [
       { id: 'c1', chargeDesc: 'Storage Fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 400, currency: 'USD', chargeType: 'Incidental' },
@@ -65,15 +67,15 @@ const DEMO_CLAIMS: ClaimRow[] = [
   },
   {
     claimId: 'CLM002', vendorType: 'CHA', vendorName: 'XYZ Cargo', vendorCode: 'V002',
-    business: 'Retail', chargesClaimed: 1, totalAmount: 1200, status: 'Pending - Resubmitted',
+    stateOfOperation: 'Gujarat', business: 'Retail', chargesClaimed: 1, totalAmount: 1200, status: 'Done',
     createdAt: '11-02-2026 09:30:15', asnNo: 'ASN001', workflowId: 'WF002',
     charges: [
-      { id: 'c8', chargeDesc: 'Documentation charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 1200, currency: 'USD', chargeType: 'Self-Reimbursement' },
+      { id: 'c8', chargeDesc: 'Documentation charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 1200, currency: 'USD', chargeType: 'Self-Reimbursement', action: 'Approved', remark: 'Verified against contract terms' },
     ],
   },
   {
     claimId: 'CLM003', vendorType: 'CFS', vendorName: 'DEF CFS', vendorCode: 'V003',
-    business: 'Retail', chargesClaimed: 2, totalAmount: 900, status: 'Pending - New',
+    stateOfOperation: 'Delhi', business: 'Retail', chargesClaimed: 2, totalAmount: 900, status: 'Pending',
     createdAt: '12-02-2026 14:20:00', asnNo: 'ASN002', workflowId: 'WF001',
     charges: [
       { id: 'c9', chargeDesc: 'Loading charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '12-Mar-26', containerNo: '-', rate: 500, currency: 'USD', chargeType: 'Incidental' },
@@ -82,7 +84,7 @@ const DEMO_CLAIMS: ClaimRow[] = [
   },
   {
     claimId: 'CLM004', vendorType: 'Transporter', vendorName: 'TCI Freight', vendorCode: 'V004',
-    business: 'Petchem', chargesClaimed: 3, totalAmount: 1450, status: 'Pending - New',
+    stateOfOperation: 'Karnataka', business: 'Petchem', chargesClaimed: 3, totalAmount: 1450, status: 'Pending',
     createdAt: '13-02-2026 16:45:30', asnNo: 'ASN002', workflowId: 'WF003',
     charges: [
       { id: 'c11', chargeDesc: 'Labelling fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '14-Mar-26', containerNo: '-', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '123', tpInvoiceDate: '14-03-2026', tpInvoiceValue: 118, basicValue: 100, cgst: 9, sgst: 9, igst: 0, tpVendorCode: 'VND001', tpVendorName: 'ABC Logistics Pvt Ltd' },
@@ -92,7 +94,7 @@ const DEMO_CLAIMS: ClaimRow[] = [
   },
   {
     claimId: 'CLM005', vendorType: 'FF', vendorName: 'Phoenix Global', vendorCode: 'V005',
-    business: 'Jio', chargesClaimed: 4, totalAmount: 2200, status: 'Pending - New',
+    stateOfOperation: 'Maharashtra', business: 'Jio', chargesClaimed: 4, totalAmount: 2200, status: 'Pending',
     createdAt: '14-02-2026 10:15:00', asnNo: 'ASN003', workflowId: 'WF002',
     charges: [
       { id: 'c14', chargeDesc: 'Storage Fees', chargeLevel: 'BL', blNo: 'BL001', blDate: '15-Mar-26', containerNo: '-', rate: 600, currency: 'USD', chargeType: 'Incidental' },
@@ -103,16 +105,16 @@ const DEMO_CLAIMS: ClaimRow[] = [
   },
   {
     claimId: 'CLM006', vendorType: 'ICD', vendorName: 'CONCOR Tughlakabad', vendorCode: 'V006',
-    business: 'Petchem', chargesClaimed: 2, totalAmount: 750, status: 'Pending - New',
+    stateOfOperation: 'Delhi', business: 'Petchem', chargesClaimed: 2, totalAmount: 750, status: 'Done',
     createdAt: '15-02-2026 08:00:00', asnNo: 'ASN003', workflowId: 'WF004',
     charges: [
-      { id: 'c18', chargeDesc: 'Loading charges', chargeLevel: 'BL', blNo: 'BL002', blDate: '16-Mar-26', containerNo: '-', rate: 450, currency: 'USD', chargeType: 'Incidental' },
-      { id: 'c19', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN003', rate: 300, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c18', chargeDesc: 'Loading charges', chargeLevel: 'BL', blNo: 'BL002', blDate: '16-Mar-26', containerNo: '-', rate: 450, currency: 'USD', chargeType: 'Incidental', action: 'Approved', remark: 'Rate within approved limits' },
+      { id: 'c19', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN003', rate: 300, currency: 'USD', chargeType: 'Incidental', action: 'Approved', remark: 'Charges confirmed with warehouse team' },
     ],
   },
   {
     claimId: 'CLM007', vendorType: 'CHA', vendorName: 'Sharaf Shipping', vendorCode: 'V007',
-    business: 'Retail', chargesClaimed: 3, totalAmount: 1850, status: 'Pending - Resubmitted',
+    stateOfOperation: 'Gujarat', business: 'Retail', chargesClaimed: 3, totalAmount: 1850, status: 'Pending',
     createdAt: '16-02-2026 13:30:45', asnNo: 'ASN004', workflowId: 'WF003',
     charges: [
       { id: 'c20', chargeDesc: 'Registration charges', chargeLevel: 'BL', blNo: 'BL001', blDate: '18-Mar-26', containerNo: '-', rate: 0, currency: 'USD', chargeType: 'Third-Party Reimbursement', tpInvoiceNo: '901', tpInvoiceDate: '18-03-2026', tpInvoiceValue: 590, basicValue: 500, cgst: 45, sgst: 45, igst: 0, tpVendorCode: 'VND003', tpVendorName: 'PQR Shipping Agency' },
@@ -122,17 +124,17 @@ const DEMO_CLAIMS: ClaimRow[] = [
   },
   {
     claimId: 'CLM008', vendorType: 'Transporter', vendorName: 'Gati KWE', vendorCode: 'V008',
-    business: 'Jio', chargesClaimed: 2, totalAmount: 980, status: 'Pending - New',
+    stateOfOperation: 'Karnataka', business: 'Jio', chargesClaimed: 2, totalAmount: 980, status: 'Done',
     createdAt: '17-02-2026 17:10:00', asnNo: 'ASN004', workflowId: 'WF005',
     charges: [
-      { id: 'c23', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 490, currency: 'USD', chargeType: 'Incidental' },
-      { id: 'c24', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 490, currency: 'USD', chargeType: 'Incidental' },
+      { id: 'c23', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN001', rate: 490, currency: 'USD', chargeType: 'Incidental', action: 'Approved', remark: 'Approved as per transporter agreement' },
+      { id: 'c24', chargeDesc: 'Loading charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN002', rate: 490, currency: 'USD', chargeType: 'Incidental', action: 'Approved', remark: 'Approved as per transporter agreement' },
     ],
   },
   // CLM009 — all 3 charge types in one claim
   {
     claimId: 'CLM009', vendorType: 'FF', vendorName: 'Maersk Logistics', vendorCode: 'V009',
-    business: 'Petchem', chargesClaimed: 6, totalAmount: 3150, status: 'Pending - New',
+    stateOfOperation: 'Gujarat', business: 'Petchem', chargesClaimed: 6, totalAmount: 3150, status: 'Pending',
     createdAt: '18-02-2026 09:00:00', asnNo: 'ASN002', workflowId: 'WF001',
     charges: [
       { id: 'c25', chargeDesc: 'Port Handling Fee', chargeLevel: 'BL', blNo: 'BL003', blDate: '20-Mar-26', containerNo: '-', rate: 500, currency: 'USD', chargeType: 'Incidental' },
@@ -146,7 +148,7 @@ const DEMO_CLAIMS: ClaimRow[] = [
   // CLM010 — all 3 charge types in one claim
   {
     claimId: 'CLM010', vendorType: 'CHA', vendorName: 'Allcargo Logistics', vendorCode: 'V010',
-    business: 'Retail', chargesClaimed: 5, totalAmount: 2780, status: 'Pending - New',
+    stateOfOperation: 'Maharashtra', business: 'Retail', chargesClaimed: 5, totalAmount: 2780, status: 'Pending',
     createdAt: '19-02-2026 11:20:00', asnNo: 'ASN003', workflowId: 'WF002',
     charges: [
       { id: 'c31', chargeDesc: 'Seal charges', chargeLevel: 'Container', blNo: '-', blDate: '', containerNo: 'CN005', rate: 300, currency: 'USD', chargeType: 'Incidental' },
@@ -265,7 +267,7 @@ const InlineApprovalDetail: React.FC<{
   onUpdateClaim: (updated: ClaimRow) => void;
 }> = ({ claim, onClose, onUpdateClaim }) => {
   const [charges, setCharges] = useState<ChargeLineItem[]>(claim.charges);
-  const [popup, setPopup] = useState<{ idx: number; action: string } | null>(null);
+  const [popup, setPopup] = useState<{ idx: number; action: string; chargeId?: string } | null>(null);
   const [expandedRemarkId, setExpandedRemarkId] = useState<string | null>(null);
 
   const chargeTypes = useMemo(() => {
@@ -276,15 +278,15 @@ const InlineApprovalDetail: React.FC<{
   const [activeTab, setActiveTab] = useState(chargeTypes[0] || 'Incidental');
   const activeCharges = charges.filter(c => c.chargeType === activeTab);
 
-  const handleAction = (idx: number, action: 'Approved' | 'Rejected') => {
-    setPopup({ idx, action });
+  const handleAction = (chargeId: string, action: 'Approved' | 'Rejected') => {
+    setPopup({ idx: 0, action, chargeId });
   };
 
   const handlePopupOk = (remark: string) => {
     if (popup) {
-      const globalIdx = charges.indexOf(activeCharges[popup.idx]);
-      const updated = [...charges];
-      updated[globalIdx] = { ...updated[globalIdx], action: popup.action as 'Approved' | 'Rejected', remark };
+      const updated = charges.map(c =>
+        c.id === popup.chargeId ? { ...c, action: popup.action as 'Approved' | 'Rejected', remark } : c
+      );
       setCharges(updated);
     }
     setPopup(null);
@@ -298,10 +300,7 @@ const InlineApprovalDetail: React.FC<{
   const handleSubmit = () => {
     const allActioned = charges.every(c => c.action);
     if (!allActioned) { alert('Please action all charge items before submitting.'); return; }
-    const allApproved = charges.every(c => c.action === 'Approved');
-    let newStatus = 'Done';
-    if (allApproved) newStatus = 'Approved';
-    onUpdateClaim({ ...claim, charges, status: newStatus });
+    onUpdateClaim({ ...claim, charges, status: 'Done' });
     onClose();
   };
 
@@ -315,7 +314,7 @@ const InlineApprovalDetail: React.FC<{
 
   return (
     <tr>
-      <td colSpan={11} style={{ padding: 0, background: '#F5F8FF' }}>
+      <td colSpan={12} style={{ padding: 0, background: '#F5F8FF' }}>
         <div style={{
           borderLeft: `4px solid ${activeColor}`,
           margin: '4px 8px 12px',
@@ -335,6 +334,7 @@ const InlineApprovalDetail: React.FC<{
               APPROVAL DETAILS — {claim.claimId}
             </span>
             <div style={{ display: 'flex', gap: 8 }}>
+              {claim.status !== 'Done' && <>
               <button onClick={handleSave} style={{
                 height: 28, padding: '0 14px', border: '1px solid #006EC3', borderRadius: 4,
                 background: '#fff', color: '#006EC3', fontSize: 11, cursor: 'pointer',
@@ -345,6 +345,7 @@ const InlineApprovalDetail: React.FC<{
                 background: '#006EC3', color: '#fff', fontSize: 11, cursor: 'pointer',
                 fontWeight: 600, fontFamily: 'inherit',
               }}>Submit</button>
+              </>}
               <button onClick={onClose} style={{
                 height: 28, padding: '0 10px', border: '1px solid #999', borderRadius: 4,
                 background: '#fff', color: '#333', fontSize: 14, cursor: 'pointer', fontFamily: 'inherit',
@@ -375,6 +376,7 @@ const InlineApprovalDetail: React.FC<{
               <thead>
                 <tr>
                   <th style={thStyle}>Charge Description</th>
+                  <th style={thStyle}>SAC Code</th>
                   <th style={thStyle}>Charge Level</th>
                   <th style={thStyle}>BL No.</th>
                   {!isThirdParty && <th style={thStyle}>BL Date</th>}
@@ -399,6 +401,7 @@ const InlineApprovalDetail: React.FC<{
                 {activeCharges.map((c, idx) => (
                   <tr key={c.id}>
                     <td style={tdStyle}>{c.chargeDesc}</td>
+                    <td style={tdStyle}>{SAC_CODES[c.chargeDesc] || '-'}</td>
                     <td style={tdStyle}>{c.chargeLevel}</td>
                     <td style={tdStyle}>{c.blNo}</td>
                     {!isThirdParty && <td style={tdStyle}>{c.blDate || '-'}</td>}
@@ -441,8 +444,8 @@ const InlineApprovalDetail: React.FC<{
                         </span>
                       ) : (
                         <div style={{ display: 'flex', gap: 4 }}>
-                          <button style={actionBtn('#D3FFEA')} onClick={() => handleAction(idx, 'Approved')}>Approve</button>
-                          <button style={actionBtn('#FFD3D3')} onClick={() => handleAction(idx, 'Rejected')}>Reject</button>
+                          <button style={actionBtn('#D3FFEA')} onClick={() => handleAction(c.id, 'Approved')}>Approve</button>
+                          <button style={actionBtn('#FFD3D3')} onClick={() => handleAction(c.id, 'Rejected')}>Reject</button>
                         </div>
                       )}
                     </td>
@@ -477,6 +480,7 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
   const [filterASN, setFilterASN] = useState('All');
   const [filterVendorCode, setFilterVendorCode] = useState('All');
   const [filterWorkflowId, setFilterWorkflowId] = useState('All');
+  const [filterStatus, setFilterStatus] = useState('All');
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
 
@@ -492,9 +496,10 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
       if (filterASN !== 'All' && c.asnNo !== filterASN) return false;
       if (filterVendorType !== 'All' && filterVendorCode !== 'All' && c.vendorCode !== filterVendorCode) return false;
       if (filterWorkflowId !== 'All' && c.workflowId !== filterWorkflowId) return false;
+      if (filterStatus !== 'All' && c.status !== filterStatus) return false;
       return true;
     });
-  }, [claims, filterBusiness, filterVendorType, filterASN, filterVendorCode, filterWorkflowId]);
+  }, [claims, filterBusiness, filterVendorType, filterASN, filterVendorCode, filterWorkflowId, filterStatus]);
 
   const handleUpdateClaim = (updated: ClaimRow) => {
     setClaims(prev => prev.map(c => c.claimId === updated.claimId ? updated : c));
@@ -506,6 +511,7 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
     setFilterASN('All');
     setFilterVendorCode('All');
     setFilterWorkflowId('All');
+    setFilterStatus('All');
     setFilterDateFrom('');
     setFilterDateTo('');
   };
@@ -597,6 +603,14 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
             </select>
           </div>
           <div>
+            <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Status</div>
+            <select style={selectStyle} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+              <option value="All">All</option>
+              <option value="Pending">Pending</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+          <div>
             <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Date From</div>
             <input
               type="date"
@@ -638,6 +652,7 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
               <th style={thStyle}>Vendor Type</th>
               <th style={thStyle}>Vendor Name</th>
               <th style={thStyle}>Vendor Code</th>
+              <th style={thStyle}>State of Operation</th>
               <th style={thStyle}>Business</th>
               <th style={thStyle}>No. of Charges</th>
               <th style={thStyle}>Total Amount (USD)</th>
@@ -655,12 +670,13 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
                   <td style={tdStyle}>{c.vendorType}</td>
                   <td style={tdStyle}>{c.vendorName}</td>
                   <td style={tdStyle}>{c.vendorCode}</td>
+                  <td style={tdStyle}>{c.stateOfOperation}</td>
                   <td style={tdStyle}>{c.business}</td>
                   <td style={tdStyle}>{c.chargesClaimed}</td>
                   <td style={tdStyle}>{c.totalAmount}</td>
                   <td style={{
                     ...tdStyle, fontWeight: 600, fontSize: 10,
-                    color: c.status.includes('Approved') ? '#0F6E3C' : c.status.includes('Rejected') ? '#A00' : c.status === 'Done' ? '#0F6E3C' : '#1565C0',
+                    color: c.status === 'Done' ? '#0F6E3C' : '#1565C0',
                   }}>{c.status}</td>
                   <td style={tdStyle}>{c.createdAt}</td>
                   <td style={tdStyle}>{c.workflowId}</td>
@@ -672,7 +688,7 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
                         fontSize: 11, fontWeight: 600, cursor: 'pointer',
                         textDecoration: 'underline', fontFamily: 'inherit',
                       }}
-                    >{expandedClaimId === c.claimId ? '[Close]' : '[Click for Approval]'}</button>
+                    >{expandedClaimId === c.claimId ? '[Close]' : c.status === 'Done' ? '[View]' : '[Click for Approval]'}</button>
                   </td>
                 </tr>
                 {expandedClaimId === c.claimId && (
@@ -685,7 +701,7 @@ const ApproverScreen: React.FC<ApproverScreenProps> = ({ onOpenMenu }) => {
               </React.Fragment>
             ))}
             {filteredClaims.length === 0 && (
-              <tr><td colSpan={11} style={{ ...tdStyle, textAlign: 'center', color: '#999', padding: 24 }}>No claims found</td></tr>
+              <tr><td colSpan={12} style={{ ...tdStyle, textAlign: 'center', color: '#999', padding: 24 }}>No claims found</td></tr>
             )}
           </tbody>
         </table>

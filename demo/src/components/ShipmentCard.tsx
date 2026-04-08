@@ -50,7 +50,7 @@ interface Props {
   data: ShipmentData;
   selected: boolean;
   onClick: () => void;
-  spotNormalOverride?: 'Spot' | 'Normal' | null;
+  spotNormalOverride?: 'Spot' | 'Tender' | null;
 }
 
 const ShipmentCard: React.FC<Props> = ({ data, selected, onClick, spotNormalOverride }) => {
@@ -61,7 +61,7 @@ const ShipmentCard: React.FC<Props> = ({ data, selected, onClick, spotNormalOver
   // Determine spot/normal: override from live state takes priority, then static data
   const spotNormal = spotNormalOverride || data.spotNormal || null;
 
-  const borderClass = spotNormal === 'Spot' ? 'spot-border' : spotNormal === 'Normal' ? 'normal-border' : '';
+  const borderClass = spotNormal === 'Spot' ? 'spot-border' : spotNormal === 'Tender' ? 'tender-border' : '';
 
   return (
     <div className={`s-card ${selected ? 'selected' : ''} ${borderClass}`} onClick={onClick}>
@@ -76,8 +76,8 @@ const ShipmentCard: React.FC<Props> = ({ data, selected, onClick, spotNormalOver
           <span className="s-card-dot" />
           <span className="s-card-type">{data.incoterm}</span>
           {spotNormal && (
-            <span className={`s-card-spot-badge ${spotNormal === 'Spot' ? 'spot' : 'normal-rfq'}`}>
-              {spotNormal === 'Spot' ? 'SPOT' : 'NORMAL'}
+            <span className={`s-card-spot-badge ${spotNormal === 'Spot' ? 'spot' : 'tender-rfq'}`}>
+              {spotNormal === 'Spot' ? 'SPOT' : 'TENDER'}
             </span>
           )}
         </div>

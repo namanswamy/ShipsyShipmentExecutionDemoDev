@@ -11,7 +11,7 @@ interface Props {
   selectedShipmentId: string | null;
   incoterm: string;
   shipmentMode: string;
-  onSpotNormalChange?: (value: 'Spot' | 'Normal') => void;
+  onSpotNormalChange?: (value: 'Spot' | 'Tender') => void;
 }
 
 const actionTabs = [
@@ -84,7 +84,7 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
     setMultiVendorSubmitted({});
     setConfirmedVendors({});
 
-    const isDemoIncidental = selectedShipmentId?.startsWith('DEMO-INCIDENTAL-');
+    const isDemoIncidental = ['ASN-0021','ASN-0022','ASN-0023','ASN-0024'].includes(selectedShipmentId || '');
     if (isDemoIncidental) {
       // Resolve tasks fresh (not from stale memo) to avoid race conditions
       const freshTasks = resolveTasksForShipment(mode, incoterm, null);
@@ -103,19 +103,26 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
       const ffIncidentalTask = freshTasks.find(t => t.name === 'FF Incidental Events');
       const taskKey = ffIncidentalTask?.taskKey || '';
 
-      if (selectedShipmentId === 'DEMO-INCIDENTAL-2' && taskKey) {
-        setStatuses({ ...demoStatuses, [taskKey]: 'Rejected' });
-        setIncidentalDrafts({ [taskKey]: createDemo2Draft() as IncidentalDraft });
-      } else if (selectedShipmentId === 'DEMO-INCIDENTAL-3' && taskKey) {
+      if (selectedShipmentId === 'ASN-0022' && taskKey) {
+        // FF: incidental approved, charge confirmation done
+        demoStatuses[taskKey] = 'Approved';
+        const ffMerged = freshTasks.find(t => t.name === 'FF Charge Confirmation & Invoicing');
+        if (ffMerged) demoStatuses[ffMerged.taskKey] = 'Done';
+        // CHA Incidental Events: open — user selects charges, Self & Third-Party auto-prefill
+        setStatuses(demoStatuses);
+        setIncidentalDrafts({
+          [taskKey]: createDemo4Draft() as IncidentalDraft,
+        });
+      } else if (selectedShipmentId === 'ASN-0023' && taskKey) {
         setStatuses({ ...demoStatuses, [taskKey]: 'Rejected' });
         setIncidentalDrafts({ [taskKey]: createDemo3Draft() as IncidentalDraft });
-      } else if (selectedShipmentId === 'DEMO-INCIDENTAL-4' && taskKey) {
+      } else if (selectedShipmentId === 'ASN-0024' && taskKey) {
         setStatuses({ ...demoStatuses, [taskKey]: 'Approved' });
         setIncidentalDrafts({ [taskKey]: createDemo4Draft() as IncidentalDraft });
       } else {
         setStatuses(demoStatuses);
       }
-    } else if (selectedShipmentId === 'DEMO-CHARGE-FF' || selectedShipmentId === 'DEMO-CHARGE-CHA') {
+    } else if (selectedShipmentId === 'ASN-0025' || selectedShipmentId === 'ASN-0026') {
       // Charge Confirmation demo shipments — incidentals approved, charge confirmation task open
       const freshTasks = resolveTasksForShipment(mode, incoterm, null);
       const demoStatuses: Record<string, string> = {};
@@ -128,7 +135,7 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
       setIsSpot(false);
       setConfirmedVendors({ 'Transporter': ['Transporter 1', 'Transporter 2'] });
 
-      if (selectedShipmentId === 'DEMO-CHARGE-FF') {
+      if (selectedShipmentId === 'ASN-0025') {
         setPortDetails({ pol: 'SHANGHAI', pod: 'NHAVA SHEVA' });
         // FF incidental approved → FF Charge Confirmation & Invoicing is next
         const ffIncidental = freshTasks.find(t => t.name === 'FF Incidental Events');
@@ -146,7 +153,7 @@ const ActionsPanel: React.FC<Props> = ({ selectedShipmentId, incoterm, shipmentM
       }
       setStatuses(demoStatuses);
     } else {
-      // Check if shipment has pre-configured spot/normal
+      // Check if shipment has pre-configured spot/tender
       const shipmentData = shipments.find(s => s.id === selectedShipmentId);
       if (shipmentData?.spotNormal) {
         const isSpotVal = shipmentData.spotNormal === 'Spot';

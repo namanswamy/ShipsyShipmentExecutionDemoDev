@@ -14,10 +14,10 @@ function App() {
   const [activeMilestone, setActiveMilestone] = useState('ALL');
   const [showMenu, setShowMenu] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<'shipper' | 'approver'>('shipper');
-  // Track spot/normal overrides per shipment (set dynamically when user selects in task 1)
-  const [spotNormalMap, setSpotNormalMap] = useState<Record<string, 'Spot' | 'Normal'>>({});
+  // Track spot/tender overrides per shipment (set dynamically when user selects in task 1)
+  const [spotNormalMap, setSpotNormalMap] = useState<Record<string, 'Spot' | 'Tender'>>({});
 
-  const handleSpotNormalChange = (value: 'Spot' | 'Normal') => {
+  const handleSpotNormalChange = (value: 'Spot' | 'Tender') => {
     setSpotNormalMap(prev => ({ ...prev, [selectedShipmentId]: value }));
   };
 

@@ -346,23 +346,23 @@
   border-right: 4px solid var(--primary-dark);
 }
 
-/* Spot / Normal visual indicators */
+/* Spot / Tender visual indicators */
 .s-card.spot-border {
   border-left: 4px solid #E65100;
 }
 .s-card.spot-border:not(.selected) {
   background: linear-gradient(90deg, #FFF8F0 0%, #FFFFFF 6%);
 }
-.s-card.normal-border {
+.s-card.tender-border {
   border-left: 4px solid #006EC3;
 }
-.s-card.normal-border:not(.selected) {
+.s-card.tender-border:not(.selected) {
   background: linear-gradient(90deg, #F0F7FF 0%, #FFFFFF 6%);
 }
 .s-card.selected.spot-border {
   border-left: 4px solid #E65100;
 }
-.s-card.selected.normal-border {
+.s-card.selected.tender-border {
   border-left: 4px solid #006EC3;
 }
 
@@ -380,7 +380,7 @@
   color: #E65100;
   border: 1px solid #FFCC80;
 }
-.s-card-spot-badge.normal-rfq {
+.s-card-spot-badge.tender-rfq {
   background: #E3F2FD;
   color: #1565C0;
   border: 1px solid #90CAF9;

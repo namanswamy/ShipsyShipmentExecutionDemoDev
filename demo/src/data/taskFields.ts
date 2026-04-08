@@ -6,7 +6,7 @@ export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[];
   'Select Mode of Shipment': { fields: [
     { label: 'Mode', code: 'SMF87', value: 'FCL', type: 'dropdown', req: true, opts: ['FCL', 'LCL', 'Bulk', 'Break Bulk'], defaultVal: 'FCL' },
     { label: 'Incoterm', code: 'SMF88', value: 'EXW', type: 'dropdown', req: true, opts: ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'], defaultVal: 'EXW' },
-    { label: 'Spot / Normal', value: '', type: 'dropdown', req: true, opts: ['Spot', 'Normal'], note: 'NEW' },
+    { label: 'Spot / Tender', value: '', type: 'dropdown', req: true, opts: ['Spot', 'Tender'], note: 'NEW' },
   ] },
 
   'Select Port Details': { fields: [
@@ -49,7 +49,7 @@ export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[];
   ] },
 
   'Vendor Selection': { fields: [
-    { label: 'Vendor Selection', value: '', type: 'addmore', req: true, opts: ['Freight Forwarder', 'Shipping Line', 'CHA', 'CFS', 'ICD', 'Break Bulk Vendor', 'Surveyor', 'Transporter'], note: '+ Add More for multi-value' },
+    { label: 'Vendor Selection', value: '', type: 'addmore', req: true, opts: ['Freight Forwarder', 'Shipping Line', 'CHA', 'CFS', 'ICD', 'Break Bulk Vendor', 'Surveyor', 'Transporter', 'Inter Carting'], note: '+ Add More for multi-value' },
     { label: 'Segment', value: '', type: 'dropdown', req: false, opts: ['DPD', 'DPD CFS', 'Non DPD'], note: 'If CFS/ICD selected' },
     { label: 'Category', value: '', type: 'dropdown', req: false, opts: ['General In-gauge', 'General Out-gauge', 'Haz cargo', 'Reefer'], note: 'If CFS/ICD selected' },
     { label: 'Destuff Indicator', value: '', type: 'dropdown', req: false, opts: ['Loaded', 'Destuffed'], note: 'If CFS/ICD selected' },

@@ -115,6 +115,15 @@ const VENDOR_TEMPLATES: Record<string, (pol: string, pod: string, sd: string, ed
     { rank: 3, vendorName: 'Rivigo', carrierName: '-', containerSize: '-', containerType: '-', transitDays: 2, amount: 800,
       details: { 'Bid ID': '1528810-TR003', 'Transporter Name': 'Rivigo', 'Pickup Location': pod, 'Delivery Location': 'Customer Warehouse', 'Vehicle Type': '32ft MXL / 40ft Trailer', 'Base Transport Cost': 'USD 600', 'Toll Charges': 'USD 95', 'Loading/Unloading': 'USD 55', 'Misc Charges': 'USD 50', 'Total Transport Cost': 'USD 800' } },
   ]),
+
+  'Inter Carting': (_pol, pod, sd, ed) => makeBids('Inter Carting', '', pod, sd, ed, [
+    { rank: 1, vendorName: 'Om Logistics', carrierName: '-', containerSize: '-', containerType: '-', transitDays: 1, amount: 280,
+      details: { 'Bid ID': '1528820-IC001', 'Inter Carting Vendor': 'Om Logistics', 'Pickup Location': pod, 'Drop Location': 'ICD / CFS', 'Vehicle Type': 'Trailer', 'Base Carting Cost': 'USD 180', 'Toll & Octroi': 'USD 40', 'Loading/Unloading': 'USD 35', 'Misc Charges': 'USD 25', 'Total Inter Carting Cost': 'USD 280' } },
+    { rank: 2, vendorName: 'Agarwal Packers', carrierName: '-', containerSize: '-', containerType: '-', transitDays: 1, amount: 340,
+      details: { 'Bid ID': '1528820-IC002', 'Inter Carting Vendor': 'Agarwal Packers', 'Pickup Location': pod, 'Drop Location': 'ICD / CFS', 'Vehicle Type': 'Trailer', 'Base Carting Cost': 'USD 220', 'Toll & Octroi': 'USD 50', 'Loading/Unloading': 'USD 40', 'Misc Charges': 'USD 30', 'Total Inter Carting Cost': 'USD 340' } },
+    { rank: 3, vendorName: 'VRL Logistics', carrierName: '-', containerSize: '-', containerType: '-', transitDays: 2, amount: 390,
+      details: { 'Bid ID': '1528820-IC003', 'Inter Carting Vendor': 'VRL Logistics', 'Pickup Location': pod, 'Drop Location': 'ICD / CFS', 'Vehicle Type': 'Trailer', 'Base Carting Cost': 'USD 260', 'Toll & Octroi': 'USD 55', 'Loading/Unloading': 'USD 40', 'Misc Charges': 'USD 35', 'Total Inter Carting Cost': 'USD 390' } },
+  ]),
 };
 
 export function getBidsForVendors(selectedVendors: string[], pol?: string, pod?: string): Bid[] {
@@ -131,7 +140,7 @@ export function getBidsForVendors(selectedVendors: string[], pol?: string, pod?:
   return bids;
 }
 
-// Generate spot bids — higher prices than normal, with spot- prefix ids
+// Generate spot bids — higher prices than tender, with spot- prefix ids
 export function getSpotBidsForVendors(selectedVendors: string[], pol?: string, pod?: string): Bid[] {
   const normalBids = getBidsForVendors(selectedVendors, pol, pod);
   return normalBids.map(bid => ({
@@ -147,7 +156,7 @@ export function getSpotBidsForVendors(selectedVendors: string[], pol?: string, p
   }));
 }
 
-// Get Normal Rank 1 bids only (for spot reference)
+// Get Tender Rank 1 bids only (for spot reference)
 export function getNormalRank1Bids(selectedVendors: string[], pol?: string, pod?: string): Bid[] {
   const allBids = getBidsForVendors(selectedVendors, pol, pod);
   return allBids.filter(b => b.rank === 1);

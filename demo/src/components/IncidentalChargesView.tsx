@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import type { ChargeType, ChargeLevel, BLRow, ContainerRow } from '../data/incidentalCharges';
 import {
   CHARGE_LIST, CHARGE_TYPE_MAP, CHARGE_LEVEL_MAP, createSingleBLRow, createDemoContainerRows,
-  INCIDENTAL_RATES, TP_VENDOR_OPTIONS,
+  INCIDENTAL_RATES, TP_VENDOR_OPTIONS, CHA_SELF_REIMB_RATES, CHA_THIRD_PARTY_PREFILL, SAC_CODES,
 } from '../data/incidentalCharges';
 
 // ════════════════════════════════════════════════════
@@ -150,7 +150,7 @@ const ApproverCell: React.FC<{ action?: string; remark?: string }> = ({ action, 
     Approved: { bg: '#D3FFEA', c: '#0F6E3C' },
     Rejected: { bg: '#FFD3D3', c: '#A00' },
   };
-  const s = colors[action] || colors.Rework;
+  const s = colors[action] || { bg: '#E0E0E0', c: '#666' };
   return (
     <div>
       <span style={{ padding: '3px 8px', borderRadius: 3, fontSize: 10, fontWeight: 600, background: s.bg, color: s.c, display: 'inline-block', marginBottom: remark ? 3 : 0 }}>
@@ -190,6 +190,7 @@ const IncidentalTable: React.FC<{
         <th style={{ ...thStyle, width: 30 }}>☐</th>
         <th style={thStyle}>{isBLTable ? 'BL No.' : 'Container No'}</th>
         <th style={thStyle}>{isBLTable ? 'BL Date' : 'PCD'}</th>
+        <th style={thStyle}>SAC Code</th>
         <th style={thStyle}>Rate based on PCD</th><th style={thStyle}>Currency</th>
         <th style={thStyle}>Attachment</th><th style={thStyle}>Status</th>
         {hasApproverData && <th style={{ ...thStyle, minWidth: 140 }}>Approver Response</th>}
@@ -202,6 +203,7 @@ const IncidentalTable: React.FC<{
               <td style={tdStyle}><input type="checkbox" checked={r.selected} onChange={() => toggle(i)} disabled={locked} /></td>
               <td style={tdStyle}>{isBLTable ? (r as BLRow).blNo : (r as ContainerRow).containerNo}</td>
               <td style={tdStyle}>{isBLTable ? (r as BLRow).blDate : (r as ContainerRow).date}</td>
+              <td style={tdStyle}>{SAC_CODES[charge.chargeName] || '-'}</td>
               <td style={tdStyle}>{rate}</td><td style={tdStyle}>USD</td>
               <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
               <td style={{ ...tdStyle, color: r.selected ? '#006EC3' : '#999', fontWeight: 600, fontSize: 10 }}>{r.selected ? statusText : '—'}</td>
@@ -272,6 +274,7 @@ const SelfReimbTable: React.FC<{
         <th style={{ ...thStyle, width: 30 }}>☐</th>
         <th style={thStyle}>{isBLTable ? 'BL No.' : 'Container No'}</th>
         <th style={thStyle}>{isBLTable ? 'BL Date' : 'Date'}</th>
+        <th style={thStyle}>SAC Code</th>
         <th style={thStyle}>Rate</th><th style={thStyle}>Currency</th>
         <th style={thStyle}>Attachment</th><th style={thStyle}>Status</th>
         {hasApproverData && <th style={{ ...thStyle, minWidth: 140 }}>Approver Response</th>}
@@ -284,6 +287,7 @@ const SelfReimbTable: React.FC<{
               <td style={tdStyle}><input type="checkbox" checked={r.selected} onChange={() => toggle(i)} disabled={locked} /></td>
               <td style={tdStyle}>{isBLTable ? (r as BLRow).blNo : (r as ContainerRow).containerNo}</td>
               <td style={tdStyle}>{isBLTable ? (r as BLRow).blDate : (r as ContainerRow).date}</td>
+              <td style={tdStyle}>{SAC_CODES[charge.chargeName] || '-'}</td>
               <td style={tdStyle}><input style={{ ...inputSmall, background: locked ? '#f0f0f0' : '#fff' }} type="number" placeholder="Enter rate" value={r.rate} disabled={locked} onChange={e => update(i, 'rate', e.target.value)} /></td>
               <td style={tdStyle}><select style={{ ...inputSmall, width: 70, background: locked ? '#f0f0f0' : '#fff' }} value={r.currency} disabled={locked} onChange={e => update(i, 'currency', e.target.value)}><option>USD</option><option>USD</option></select></td>
               <td style={tdStyle}><button style={{ fontSize: 10, padding: '2px 8px', border: '1px solid #999', borderRadius: 3, background: '#fff', cursor: 'pointer' }}>Upload</button></td>
@@ -394,6 +398,7 @@ const ThirdPartyTable: React.FC<{
           <th style={{ ...thStyle, width: 30 }}>☐</th>
           <th style={thStyle}>{isBLTable ? 'BL No.' : 'Container No'}</th>
           <th style={thStyle}>{isBLTable ? 'BL Date' : 'Date'}</th>
+          <th style={thStyle}>SAC Code</th>
           <th style={thStyle}>3rd Party Invoice No.</th>
           <th style={thStyle}>3rd Party Invoice Date</th>
           <th style={thStyle}>3rd Party Invoice Value</th>
@@ -417,6 +422,7 @@ const ThirdPartyTable: React.FC<{
                 <td style={tdStyle}><input type="checkbox" checked={row.selected} onChange={() => toggle(i)} disabled={locked} /></td>
                 <td style={tdStyle}>{isBLTable ? row.blNo : row.containerNo}</td>
                 <td style={tdStyle}>{isBLTable ? row.blDate : row.date}</td>
+                <td style={tdStyle}>{SAC_CODES[charge.chargeName] || '-'}</td>
                 <td style={tdStyle}><input style={{ ...inputSmall, background: locked ? disabledBg : '#fff' }} placeholder="Invoice No" value={row.tpInvoiceNo} disabled={locked} onChange={e => updateRow(rows, i, 'tpInvoiceNo', e.target.value, isBLTable)} /></td>
                 <td style={tdStyle}><input style={{ ...inputSmall, background: locked ? disabledBg : '#fff' }} type="date" value={row.tpInvoiceDate} disabled={locked} onChange={e => updateRow(rows, i, 'tpInvoiceDate', e.target.value, isBLTable)} /></td>
                 <td style={{ ...tdStyle, background: '#f9f9f9', fontWeight: 600, fontSize: 11 }}>{row.tpInvoiceValue || '—'}</td>
@@ -487,6 +493,38 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
   const [chargeData, setChargeData] = useState<ChargeData[]>(savedDraft?.chargeData || []);
   const [wasSentForApproval, setWasSentForApproval] = useState(savedDraft?.sentForApproval || false);
   const [activeChargeTab, setActiveChargeTab] = useState<ChargeType>('Incidental');
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // For CHA tasks: store original pre-filled rates to enforce max validation (keyed by chargeName:rowId)
+  const isCHA = taskName.startsWith('CHA');
+  const originalRatesRef = useRef<Record<string, { rate?: string; basicValue?: string }>>({});
+
+  // Helper: pre-fill BL/Container rows for CHA Self-Reimb and Third-Party
+  const prefillCHARows = (chargeName: string, chargeType: ChargeType, level: ChargeLevel) => {
+    let blRows = level === 'BL' ? createSingleBLRow() : [];
+    let containerRows = level === 'Container' ? createDemoContainerRows() : [];
+
+    if (chargeType === 'Self-Reimbursement') {
+      const rates = CHA_SELF_REIMB_RATES[chargeName];
+      if (rates) {
+        blRows = blRows.map(r => ({ ...r, selected: true, rate: rates.blRate ? String(rates.blRate) : '' }));
+        containerRows = containerRows.map(r => ({ ...r, selected: true, rate: rates.containerRate ? String(rates.containerRate) : '' }));
+      }
+    } else if (chargeType === 'Third-Party Reimbursement') {
+      const prefill = CHA_THIRD_PARTY_PREFILL[chargeName];
+      if (prefill?.blPrefill) {
+        const p = prefill.blPrefill;
+        const invoiceValue = String(parseFloat(p.basicValue) + (parseFloat(p.cgst) || 0) + (parseFloat(p.sgst) || 0) + (parseFloat(p.igst) || 0));
+        blRows = blRows.map(r => ({ ...r, selected: true, tpInvoiceNo: p.tpInvoiceNo, tpInvoiceDate: p.tpInvoiceDate, tpInvoiceValue: invoiceValue, basicValue: p.basicValue, cgst: p.cgst, sgst: p.sgst, igst: p.igst, tpVendorCode: p.tpVendorCode, tpVendorName: p.tpVendorName }));
+      }
+      if (prefill?.containerPrefill) {
+        const p = prefill.containerPrefill;
+        const invoiceValue = String(parseFloat(p.basicValue) + (parseFloat(p.cgst) || 0) + (parseFloat(p.sgst) || 0) + (parseFloat(p.igst) || 0));
+        containerRows = containerRows.map(r => ({ ...r, selected: true, tpInvoiceNo: p.tpInvoiceNo, tpInvoiceDate: p.tpInvoiceDate, tpInvoiceValue: invoiceValue, basicValue: p.basicValue, cgst: p.cgst, sgst: p.sgst, igst: p.igst, tpVendorCode: p.tpVendorCode, tpVendorName: p.tpVendorName }));
+      }
+    }
+    return { blRows, containerRows };
+  };
 
   // Build charge data from selections
   const buildChargeData = () => {
@@ -497,6 +535,13 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
         const existing = chargeData.find(d => d.chargeName === c.name);
         if (existing) return existing;
         const level = CHARGE_LEVEL_MAP[c.name] || 'BL';
+
+        // CHA: pre-fill Self-Reimb and Third-Party from CHA mappings
+        if (isCHA && (c.type === 'Self-Reimbursement' || c.type === 'Third-Party Reimbursement')) {
+          const { blRows, containerRows } = prefillCHARows(c.name, c.type, level);
+          return { chargeName: c.name, chargeType: c.type, chargeLevel: level, blRows, containerRows };
+        }
+
         return {
           chargeName: c.name,
           chargeType: c.type,
@@ -505,11 +550,54 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
           containerRows: level === 'Container' ? createDemoContainerRows() : [],
         };
       });
+
+    // Store original max values for CHA validation
+    if (isCHA) {
+      const map: Record<string, { rate?: string; basicValue?: string }> = {};
+      data.forEach(c => {
+        [...c.blRows, ...c.containerRows].forEach(r => {
+          const key = `${c.chargeName}:${r.id}`;
+          if (c.chargeType === 'Self-Reimbursement' && r.rate) {
+            map[key] = { rate: r.rate };
+          } else if (c.chargeType === 'Third-Party Reimbursement' && (r as any).basicValue) {
+            map[key] = { basicValue: (r as any).basicValue };
+          }
+        });
+      });
+      originalRatesRef.current = map;
+    }
+
     setChargeData(data);
     setPhase('detail');
   };
 
   const updateChargeData = (idx: number, updated: ChargeData) => {
+    // CHA validation: Self-Reimb rate and Third-Party basicValue cannot exceed original
+    if (isCHA && (updated.chargeType === 'Self-Reimbursement' || updated.chargeType === 'Third-Party Reimbursement')) {
+      const allRows = [...updated.blRows, ...updated.containerRows];
+      for (const row of allRows) {
+        const key = `${updated.chargeName}:${row.id}`;
+        const orig = originalRatesRef.current[key];
+        if (!orig) continue;
+        if (updated.chargeType === 'Self-Reimbursement' && orig.rate) {
+          const newVal = parseFloat(row.rate) || 0;
+          const maxVal = parseFloat(orig.rate) || 0;
+          if (newVal > maxVal) {
+            setValidationError(`Not valid, please fill correct amount. Maximum allowed: ${orig.rate}`);
+            return;
+          }
+        }
+        if (updated.chargeType === 'Third-Party Reimbursement' && orig.basicValue) {
+          const newVal = parseFloat((row as any).basicValue) || 0;
+          const maxVal = parseFloat(orig.basicValue) || 0;
+          if (newVal > maxVal) {
+            setValidationError(`Not valid, please fill correct amount. Maximum allowed: ${orig.basicValue}`);
+            return;
+          }
+        }
+      }
+    }
+    setValidationError(null);
     setChargeData(prev => prev.map((c, i) => i === idx ? updated : c));
   };
 
@@ -683,6 +771,12 @@ const IncidentalChargesView: React.FC<Props> = ({ taskName, onClose, onSendForAp
           );
         })}
       </div>
+
+      {validationError && (
+        <div style={{ margin: '8px 16px 0', padding: '8px 12px', background: '#FFF3E0', border: '1px solid #E65100', borderRadius: 4, color: '#E65100', fontSize: 11, fontWeight: 600 }}>
+          {validationError}
+        </div>
+      )}
 
       <div className="task-detail-body" style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'auto' }}>
         {/* Active tab content */}

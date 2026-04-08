@@ -67,7 +67,7 @@ const ViewDetailsModal: React.FC<{ bid: Bid; onClose: () => void }> = ({ bid, on
   </div>
 );
 
-// Normal Rank 1 Reference Card (non-editable, for Spot mode)
+// Tender Rank 1 Reference Card (non-editable, for Spot mode)
 const podOnlyVendors = ['CHA', 'CFS', 'ICD', 'Transporter', 'Surveyor'];
 
 const NormalRefCard: React.FC<{ bid: Bid; onViewDetails: () => void }> = ({ bid, onViewDetails }) => {
@@ -80,7 +80,7 @@ const NormalRefCard: React.FC<{ bid: Bid; onViewDetails: () => void }> = ({ bid,
       <div style={{
         padding: '4px 20px', background: '#EDEDED', fontSize: 11, fontWeight: 600, color: '#666',
       }}>
-        Normal RFQ Rank 1 Bid
+        Tender RFQ Rank 1 Bid
       </div>
       <div style={{
         display: 'flex', alignItems: 'center', padding: '12px 20px', flexWrap: 'wrap',
@@ -207,7 +207,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
             deviation += selectedBid.amount - normalRef.amount;
           }
         } else {
-          // Normal deviation: selected bid - rank 1 bid
+          // Tender deviation: selected bid - rank 1 bid
           const rank1Bid = vendorBids.find(b => b.rank === 1);
           if (rank1Bid && selectedBid.rank > 1) {
             deviation += selectedBid.amount - rank1Bid.amount;
@@ -231,7 +231,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
   };
 
   const handleSubmit = () => {
-    // Spot always has deviation; Normal only if deviation > 0
+    // Spot always has deviation; Tender only if deviation > 0
     if ((isSpot || totalDeviation > 0) && !deviationReason) {
       setShowDeviationPopup(true);
       return;
@@ -338,7 +338,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
           )}
         </div>
 
-        {/* Normal Rank 1 reference card (Spot mode only) */}
+        {/* Tender Rank 1 reference card (Spot mode only) */}
         {isSpot && activeNormalRef && (
           <NormalRefCard bid={activeNormalRef} onViewDetails={() => setViewDetailBid(activeNormalRef)} />
         )}
@@ -373,7 +373,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>
-              {isSpot ? 'Spot Deviation from Normal' : 'Total Deviation Amount'}
+              {isSpot ? 'Spot Deviation from Tender' : 'Total Deviation Amount'}
             </div>
             <div style={{
               background: totalDeviation > 0 ? '#FFF3E0' : '#F5F5F5', borderRadius: 4,
@@ -388,7 +388,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
         {/* Deviation reason (read-only view) */}
         {readOnly && deviationReason && (
           <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>Reason for Deviation</div>
+            <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>Deviation Reason</div>
             <div style={{
               background: '#FFF8E1', borderRadius: 4, padding: '10px 16px',
               fontSize: 13, fontWeight: 500, color: '#333', border: '1px solid #FFE082',
@@ -420,20 +420,31 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
             </div>
             <div style={{ fontSize: 12, color: '#999', marginBottom: 16 }}>
               {isSpot
-                ? <>Spot rate deviates from Normal RFQ Rank 1. Deviation: <b style={{ color: '#E65100' }}>{formatAmount(totalDeviation, 'USD')}</b></>
+                ? <>Spot rate deviates from Tender RFQ Rank 1. Deviation: <b style={{ color: '#E65100' }}>{formatAmount(totalDeviation, 'USD')}</b></>
                 : <>A bid other than Rank 1 was selected. Total deviation: <b style={{ color: '#E65100' }}>{formatAmount(totalDeviation, 'USD')}</b></>
               }
             </div>
             <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>
-              Reason for Deviation <span style={{ color: '#E53935' }}>*</span>
+              Deviation Reason <span style={{ color: '#E53935' }}>*</span>
             </div>
-            <textarea
+            <select
               className="field-input"
               value={deviationReason}
               onChange={e => setDeviationReason(e.target.value)}
-              placeholder="Enter reason for deviation..."
-              style={{ marginBottom: 20, height: 80, padding: '8px 10px', resize: 'vertical' }}
-            />
+              style={{ marginBottom: 20, height: 36, padding: '0 10px' }}
+            >
+              <option value="">Select category...</option>
+              <option value="Capacity Constraint">Capacity Constraint</option>
+              <option value="Service Level Requirement">Service Level Requirement</option>
+              <option value="Vendor Non-Availability">Vendor Non-Availability</option>
+              <option value="Urgent / Priority Shipment">Urgent / Priority Shipment</option>
+              <option value="Rate Negotiation Pending">Rate Negotiation Pending</option>
+              <option value="Operational Requirement">Operational Requirement</option>
+              <option value="Customer / Consignee Request">Customer / Consignee Request</option>
+              <option value="Contract Rate Expired">Contract Rate Expired</option>
+              <option value="Route / Transit Preference">Route / Transit Preference</option>
+              <option value="Other">Other</option>
+            </select>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button className="btn-reject" onClick={() => setShowDeviationPopup(false)} style={{ border: '1px solid #999', color: '#333' }}>
                 Cancel

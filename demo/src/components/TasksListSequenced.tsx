@@ -78,7 +78,7 @@ interface Props {
   setMultiVendorSubmitted: React.Dispatch<React.SetStateAction<Record<string, Set<number>>>>;
   confirmedVendors: Record<string, string[]>;
   setConfirmedVendors: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
-  onSpotNormalChange?: (value: 'Spot' | 'Normal') => void;
+  onSpotNormalChange?: (value: 'Spot' | 'Tender') => void;
 }
 
 const TasksListSequenced: React.FC<Props> = ({
@@ -181,9 +181,9 @@ const TasksListSequenced: React.FC<Props> = ({
 
       // Extract Spot/Normal from Select Mode of Shipment
       if (task?.name === 'Select Mode of Shipment') {
-        const spotVal = fieldValues['Spot / Normal'] === 'Spot';
+        const spotVal = fieldValues['Spot / Tender'] === 'Spot';
         setIsSpot(spotVal);
-        onSpotNormalChange?.(spotVal ? 'Spot' : 'Normal');
+        onSpotNormalChange?.(spotVal ? 'Spot' : 'Tender');
       }
 
       // Extract confirmed vendors from CFS/ICD/Transporter confirmation tasks
