@@ -8,6 +8,7 @@ interface GPOResult {
   totalBidAmount: number;
   totalDeviation: number;
   deviationReason: string;
+  deviationRemarks?: string;
   allBids: Bid[];
   isSpot?: boolean;
   normalRank1Bids?: Bid[];
@@ -166,6 +167,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
   );
   const [showDeviationPopup, setShowDeviationPopup] = useState(false);
   const [deviationReason, setDeviationReason] = useState(previousResult?.deviationReason || '');
+  const [deviationRemarks, setDeviationRemarks] = useState(previousResult?.deviationRemarks || '');
   const [viewDetailBid, setViewDetailBid] = useState<Bid | null>(null);
 
   // Group bids by vendor type
@@ -236,13 +238,13 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
       setShowDeviationPopup(true);
       return;
     }
-    onSubmit({ selectedBids, totalBidAmount, totalDeviation, deviationReason, allBids, isSpot, normalRank1Bids });
+    onSubmit({ selectedBids, totalBidAmount, totalDeviation, deviationReason, deviationRemarks, allBids, isSpot, normalRank1Bids });
   };
 
   const handleDeviationSubmit = () => {
     if (!deviationReason) return;
     setShowDeviationPopup(false);
-    onSubmit({ selectedBids, totalBidAmount, totalDeviation, deviationReason, allBids, isSpot, normalRank1Bids });
+    onSubmit({ selectedBids, totalBidAmount, totalDeviation, deviationReason, deviationRemarks, allBids, isSpot, normalRank1Bids });
   };
 
   const allVendorsSelected = vendorTypes.every(vt => selectedBids[vt]);
@@ -273,7 +275,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
             <>
               <button className="btn-reject" onClick={() => onReject ? setShowRejectPopup(true) : onClose()}>Reject</button>
               <button className="btn-approve" onClick={() => onSubmit({
-                selectedBids, totalBidAmount, totalDeviation, deviationReason, allBids, isSpot, normalRank1Bids,
+                selectedBids, totalBidAmount, totalDeviation, deviationReason, deviationRemarks, allBids, isSpot, normalRank1Bids,
               })}>Approve</button>
             </>
           ) : (
@@ -394,6 +396,7 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
               fontSize: 13, fontWeight: 500, color: '#333', border: '1px solid #FFE082',
             }}>
               {deviationReason}
+              {deviationRemarks && <div style={{ fontSize: 12, color: '#666', marginTop: 6, fontWeight: 400, fontStyle: 'italic' }}>{deviationRemarks}</div>}
             </div>
           </div>
         )}
@@ -445,6 +448,16 @@ const GPOTaskView: React.FC<Props> = ({ selectedVendors, pol, pod, isSpot, onClo
               <option value="Route / Transit Preference">Route / Transit Preference</option>
               <option value="Other">Other</option>
             </select>
+            <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>
+              Additional Remarks
+            </div>
+            <textarea
+              className="field-input"
+              value={deviationRemarks}
+              onChange={e => setDeviationRemarks(e.target.value)}
+              placeholder="Enter additional details..."
+              style={{ marginBottom: 20, height: 60, padding: '8px 10px', resize: 'vertical' }}
+            />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button className="btn-reject" onClick={() => setShowDeviationPopup(false)} style={{ border: '1px solid #999', color: '#333' }}>
                 Cancel
