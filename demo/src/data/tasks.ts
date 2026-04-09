@@ -215,8 +215,7 @@ export const tasks: Task[] = [
   ]},
   // TRANSPORTER
   {id:37,name:"Carrier Confirmation",org:"Transporter",code:"TBD",team:"",ms:"Destination",assignee:"Transporter",approved:false,isNew:true,fields:[
-    {label:"Carrier Confirmation Status",value:"",type:"dropdown",req:true,opts:["Confirmed","Pending","Rejected"]},
-    {label:"Vehicle Number",value:"",type:"text",req:true},{label:"Driver Name",value:"",type:"text",req:true},{label:"Driver Mobile",value:"",type:"text",req:true},
+    {label:"Carrier Details",value:"",type:"carrier-rows",req:false},
   ]},
   {id:38,name:"Consignment Note & Eway Bill",org:"Transporter",code:"TBD",team:"",ms:"Destination",assignee:"Transporter",approved:false,isNew:true,fields:[
     {label:"Consignment Note",value:"",type:"text",req:true},{label:"Eway Bill Number",value:"",type:"text",req:true},

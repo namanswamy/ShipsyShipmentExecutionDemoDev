@@ -327,10 +327,7 @@ export const TASK_FIELDS: Record<string, { fields: Field[]; docFields?: Field[];
   ] },
 
   'Carrier Confirmation': { fields: [
-    { label: 'Carrier Confirmation Status', value: '', type: 'dropdown', req: true, opts: ['Confirmed', 'Pending', 'Rejected'] },
-    { label: 'Vehicle Number', value: '', type: 'text', req: true },
-    { label: 'Driver Name', value: '', type: 'text', req: true },
-    { label: 'Driver Mobile', value: '', type: 'text', req: true },
+    { label: 'Carrier Details', value: '', type: 'carrier-rows', req: false },
   ] },
 
   'Consignment Note & Eway Bill': { fields: [

@@ -194,7 +194,14 @@ const TasksListSequenced: React.FC<Props> = ({
         setConfirmedVendors(prev => ({ ...prev, 'ICD': fieldValues['ICD Vendors'].split(', ').filter(Boolean) }));
       }
       if (task?.name === 'Transporter Confirmation' && fieldValues['Transporter']) {
-        setConfirmedVendors(prev => ({ ...prev, 'Transporter': fieldValues['Transporter'].split(', ').filter(Boolean) }));
+        let transporterNames: string[] = [];
+        try {
+          const parsed = JSON.parse(fieldValues['Transporter']);
+          if (Array.isArray(parsed)) transporterNames = parsed.map((r: { transporter: string }) => r.transporter).filter(Boolean);
+        } catch {
+          transporterNames = fieldValues['Transporter'].split(', ').filter(Boolean);
+        }
+        setConfirmedVendors(prev => ({ ...prev, 'Transporter': transporterNames }));
       }
 
       // Extract POL/POD from Select Port Details
@@ -520,6 +527,7 @@ const TasksListSequenced: React.FC<Props> = ({
               }
             }}
             onVendorTaskSubmit={task.name === 'Vendor Selection' ? handleVendorTaskSubmit : undefined}
+            onAutoSave={isMultiVendor ? (fv) => setSavedFields(prev => ({ ...prev, [fieldKey]: fv })) : undefined}
             savedFieldValues={savedFields[fieldKey]}
             hideHeader={isMultiVendor}
             submitted={isVendorSubmitted}

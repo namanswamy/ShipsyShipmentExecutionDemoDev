@@ -150,10 +150,223 @@ const AddMoreField: React.FC<{ f: Field; value?: string; onChange?: (val: string
   );
 };
 
+// Transporter Confirmation: each transporter gets 4 detail fields
+const CONTAINER_TYPE_OPTS = ['Dry', 'Reefer', 'Open Top', 'Flat Rack', 'Tank', 'Hard Top'];
+const VEHICLE_TYPE_OPTS = ['20ft Trailer', '40ft Trailer', '20ft Flatbed', '40ft Flatbed', '32ft MXL', 'Open Body Truck', 'Closed Container Truck'];
+const CONTRACT_TYPE_OPTS = ['Contract A', 'Contract B'];
+
+interface TransporterRow {
+  transporter: string;
+  containerType: string;
+  vehicleType: string;
+  contractType: string;
+  containerCount: string;
+}
+
+const serializeTransporterRows = (rows: TransporterRow[]): string => {
+  const valid = rows.filter(r => r.transporter);
+  if (valid.length === 0) return '';
+  return JSON.stringify(valid);
+};
+
+const deserializeTransporterRows = (value?: string): TransporterRow[] => {
+  if (!value) return [{ transporter: '', containerType: '', vehicleType: '', contractType: '', containerCount: '' }];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  } catch {
+    // Legacy comma-separated format — convert
+    const names = value.split(', ').filter(Boolean);
+    if (names.length > 0) return names.map(n => ({ transporter: n, containerType: '', vehicleType: '', contractType: '', containerCount: '' }));
+  }
+  return [{ transporter: '', containerType: '', vehicleType: '', contractType: '', containerCount: '' }];
+};
+
+const TransporterConfirmationField: React.FC<{ f: Field; value?: string; onChange?: (val: string) => void }> = ({ f, value, onChange }) => {
+  const [rows, setRows] = useState<TransporterRow[]>(deserializeTransporterRows(value));
+  const allOpts = f.opts || [];
+
+  const getAvailableOpts = (currentIdx: number) => {
+    const othersSelected = rows.filter((_, i) => i !== currentIdx).map(r => r.transporter).filter(Boolean);
+    return allOpts.filter(o => !othersSelected.includes(o));
+  };
+
+  const updateRow = (idx: number, field: keyof TransporterRow, val: string) => {
+    const updated = rows.map((r, i) => i === idx ? { ...r, [field]: val } : r);
+    setRows(updated);
+    onChange?.(serializeTransporterRows(updated));
+  };
+
+  const handleRemove = (idx: number) => {
+    const updated = rows.filter((_, i) => i !== idx);
+    setRows(updated);
+    onChange?.(serializeTransporterRows(updated));
+  };
+
+  const handleAdd = () => {
+    setRows([...rows, { transporter: '', containerType: '', vehicleType: '', contractType: '', containerCount: '' }]);
+  };
+
+  const selectedCount = rows.filter(r => r.transporter).length;
+  const hasMore = selectedCount < allOpts.length;
+
+  const fieldStyle: React.CSSProperties = { flex: 1, minWidth: 120 };
+  const labelStyle: React.CSSProperties = { fontSize: 10, color: '#666', marginBottom: 3, fontWeight: 600 };
+  const selectStyle: React.CSSProperties = { width: '100%', height: 30, border: '1px solid #d9d9d9', borderRadius: 4, fontSize: 11, padding: '0 6px', fontFamily: 'inherit' };
+  const inputStyle: React.CSSProperties = { ...selectStyle };
+
+  return (
+    <div>
+      {rows.map((row, i) => (
+        <div key={i} style={{ marginBottom: 12, background: '#FAFAFA', borderRadius: 6, padding: '10px 12px', border: '1px solid #e8e8e8' }}>
+          <div className="addmore-row" style={{ marginBottom: row.transporter ? 8 : 0 }}>
+            <select className="field-select" style={{ flex: 1 }} value={row.transporter} onChange={e => updateRow(i, 'transporter', e.target.value)}>
+              <option value="">Select Transporter...</option>
+              {getAvailableOpts(i).map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+            {rows.length > 1 && (
+              <button className="addmore-remove" onClick={() => handleRemove(i)}>&#10005;</button>
+            )}
+          </div>
+          {row.transporter && (
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <div style={fieldStyle}>
+                <div style={labelStyle}>Container Type</div>
+                <select style={selectStyle} value={row.containerType} onChange={e => updateRow(i, 'containerType', e.target.value)}>
+                  <option value="">Select...</option>
+                  {CONTAINER_TYPE_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div style={fieldStyle}>
+                <div style={labelStyle}>Vehicle Type</div>
+                <select style={selectStyle} value={row.vehicleType} onChange={e => updateRow(i, 'vehicleType', e.target.value)}>
+                  <option value="">Select...</option>
+                  {VEHICLE_TYPE_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div style={fieldStyle}>
+                <div style={labelStyle}>Contract Type</div>
+                <select style={selectStyle} value={row.contractType} onChange={e => updateRow(i, 'contractType', e.target.value)}>
+                  <option value="">Select...</option>
+                  {CONTRACT_TYPE_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div style={fieldStyle}>
+                <div style={labelStyle}>Container Count</div>
+                <input type="number" min="1" style={inputStyle} placeholder="Count" value={row.containerCount} onChange={e => updateRow(i, 'containerCount', e.target.value)} />
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+      {hasMore && (
+        <button className="addmore-add" onClick={handleAdd}>
+          <span style={{ fontSize: 16, lineHeight: '1' }}>+</span> Add More
+        </button>
+      )}
+    </div>
+  );
+};
+
+// Carrier Confirmation: repeatable rows of 5 fields per transporter
+const CARRIER_STATUS_OPTS = ['Confirmed', 'Pending', 'Rejected'];
+const CARRIER_VEHICLE_TYPE_OPTS = ['20ft Trailer', '40ft Trailer', '20ft Flatbed', '40ft Flatbed', '32ft MXL', 'Open Body Truck', 'Closed Container Truck', 'Mini Truck', 'Taurus'];
+
+interface CarrierRow {
+  status: string;
+  vehicleNumber: string;
+  vehicleType: string;
+  driverName: string;
+  driverMobile: string;
+}
+
+const serializeCarrierRows = (rows: CarrierRow[]): string => {
+  const valid = rows.filter(r => r.status || r.vehicleNumber || r.driverName);
+  if (valid.length === 0) return '';
+  return JSON.stringify(valid);
+};
+
+const deserializeCarrierRows = (value?: string): CarrierRow[] => {
+  if (!value) return [{ status: '', vehicleNumber: '', vehicleType: '', driverName: '', driverMobile: '' }];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  } catch { /* ignore */ }
+  return [{ status: '', vehicleNumber: '', vehicleType: '', driverName: '', driverMobile: '' }];
+};
+
+const CarrierConfirmationField: React.FC<{ value?: string; onChange?: (val: string) => void }> = ({ value, onChange }) => {
+  const [rows, setRows] = useState<CarrierRow[]>(deserializeCarrierRows(value));
+
+  const updateRow = (idx: number, field: keyof CarrierRow, val: string) => {
+    const updated = rows.map((r, i) => i === idx ? { ...r, [field]: val } : r);
+    setRows(updated);
+    onChange?.(serializeCarrierRows(updated));
+  };
+
+  const handleRemove = (idx: number) => {
+    const updated = rows.filter((_, i) => i !== idx);
+    setRows(updated);
+    onChange?.(serializeCarrierRows(updated));
+  };
+
+  const handleAdd = () => {
+    setRows([...rows, { status: '', vehicleNumber: '', vehicleType: '', driverName: '', driverMobile: '' }]);
+  };
+
+  const labelStyle: React.CSSProperties = { fontSize: 10, color: '#666', marginBottom: 3, fontWeight: 600 };
+  const selectStyle: React.CSSProperties = { width: '100%', height: 30, border: '1px solid #d9d9d9', borderRadius: 4, fontSize: 11, padding: '0 6px', fontFamily: 'inherit' };
+  const inputStyle: React.CSSProperties = { ...selectStyle };
+
+  return (
+    <div>
+      {rows.map((row, i) => (
+        <div key={i} style={{ marginBottom: 10, background: '#FAFAFA', borderRadius: 6, padding: '10px 12px', border: '1px solid #e8e8e8', position: 'relative' }}>
+          {rows.length > 1 && (
+            <button className="addmore-remove" onClick={() => handleRemove(i)} style={{ position: 'absolute', top: 8, right: 8 }}>&#10005;</button>
+          )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <div style={labelStyle}>Status</div>
+              <select style={selectStyle} value={row.status} onChange={e => updateRow(i, 'status', e.target.value)}>
+                <option value="">Select...</option>
+                {CARRIER_STATUS_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={labelStyle}>Vehicle No.</div>
+              <input type="text" style={inputStyle} placeholder="Enter..." value={row.vehicleNumber} onChange={e => updateRow(i, 'vehicleNumber', e.target.value)} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={labelStyle}>Vehicle Type</div>
+              <select style={selectStyle} value={row.vehicleType} onChange={e => updateRow(i, 'vehicleType', e.target.value)}>
+                <option value="">Select...</option>
+                {CARRIER_VEHICLE_TYPE_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={labelStyle}>Driver Name</div>
+              <input type="text" style={inputStyle} placeholder="Enter..." value={row.driverName} onChange={e => updateRow(i, 'driverName', e.target.value)} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={labelStyle}>Driver Mobile</div>
+              <input type="text" style={inputStyle} placeholder="Enter..." value={row.driverMobile} onChange={e => updateRow(i, 'driverMobile', e.target.value)} />
+            </div>
+          </div>
+        </div>
+      ))}
+      <button className="addmore-add" onClick={handleAdd}>
+        <span style={{ fontSize: 16, lineHeight: '1' }}>+</span> Add More
+      </button>
+    </div>
+  );
+};
+
 const FieldInput: React.FC<{ f: Field; value?: string; onChange?: (val: string) => void }> = ({ f, value, onChange }) => {
   const handleChange = (val: string) => onChange?.(val);
   if (f.type === 'auto') return <div className="field-auto">{f.value || 'Auto-populated'}</div>;
   if (f.type === 'upload') return <button className="field-upload-btn">&#11014; Choose file</button>;
+  if (f.type === 'carrier-rows') return <CarrierConfirmationField value={value} onChange={onChange} />;
   if (f.type === 'addmore') return <AddMoreField f={f} value={value} onChange={onChange} />;
   if (f.type === 'dropdown' || f.type === 'multiselect') {
     return (
@@ -274,6 +487,7 @@ interface Props {
   onVendorSelected?: (vendor: 'CFS' | 'ICD' | null) => void;
   onSubmit?: (fieldValues?: Record<string, string>) => void;
   onVendorTaskSubmit?: (vendors: string[]) => void;
+  onAutoSave?: (fieldValues: Record<string, string>) => void;
   savedFieldValues?: Record<string, string>;
   hideHeader?: boolean;
   submitted?: boolean;
@@ -292,7 +506,7 @@ const getModeOpts = (shipmentMode?: string): string[] => {
   return SEA_MODES;
 };
 
-const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit, onVendorTaskSubmit, savedFieldValues, hideHeader, submitted }) => {
+const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, onVendorSelected, onSubmit, onVendorTaskSubmit, onAutoSave, savedFieldValues, hideHeader, submitted }) => {
   const [markDone, setMarkDone] = useState(true);
   const [selectedVendors, setSelectedVendors] = useState<string[]>(
     savedFieldValues?.['Vendor Selection'] ? savedFieldValues['Vendor Selection'].split(', ').filter(Boolean) : []
@@ -303,7 +517,11 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
   const hasF = allF.length > 0 || docF.length > 0;
 
   const updateField = (label: string, value: string) => {
-    setFieldValues(prev => ({ ...prev, [label]: value }));
+    setFieldValues(prev => {
+      const updated = { ...prev, [label]: value };
+      onAutoSave?.(updated);
+      return updated;
+    });
   };
 
   const collectAndSubmit = () => {
@@ -456,6 +674,19 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
                 {allF.map((f, i) => {
                   if (!shouldShowField(f)) return null;
 
+                  // Special rendering for Transporter Confirmation addmore field
+                  if (task.name === 'Transporter Confirmation' && f.type === 'addmore') {
+                    return (
+                      <div key={i} className="field-item full-width">
+                        <div className="field-label">
+                          {f.label}
+                          {f.req && <span className="field-required">*</span>}
+                        </div>
+                        <TransporterConfirmationField f={f} value={fieldValues[f.label]} onChange={v => updateField(f.label, v)} />
+                      </div>
+                    );
+                  }
+
                   // Special rendering for Vendor Selection addmore field
                   if (isVendorSelectionTask && f.type === 'addmore') {
                     const filteredField = { ...f, opts: getVendorOptions(f.opts || [], incoterm) };
@@ -477,7 +708,7 @@ const TaskDetail: React.FC<Props> = ({ task, incoterm, shipmentMode, onClose, on
                   }
 
                   return (
-                    <div key={i} className={`field-item ${f.type === 'addmore' ? 'full-width' : ''}`}>
+                    <div key={i} className={`field-item ${f.type === 'addmore' || f.type === 'carrier-rows' ? 'full-width' : ''}`}>
                       <div className="field-label">
                         {f.label}
                         {f.req && <span className="field-required">*</span>}
