@@ -89,22 +89,6 @@ const InvoiceScreen: React.FC<Props> = ({ onOpenMenu, defaultTab = 'payables' })
     return statusBadgeColors[key] || '#CDCDCD';
   };
 
-  const isDueOverdue = (inv: Invoice): boolean => {
-    return inv.dueDateLabel.includes('ago');
-  };
-
-  const getActionButton = (inv: Invoice) => {
-    if (activeTab === 'payables') {
-      if (inv.status === 'APPROVED') return { label: 'Record Payment', show: true };
-      if (inv.status === 'REVIEW_PENDING') return { label: 'Review Invoice', show: true };
-      if (inv.status === 'PAID') return { label: 'Record Payment', show: true };
-    } else {
-      if (inv.status === 'PAID' || inv.status === 'RECEIVED') return { label: 'Settle', show: true };
-      if (inv.status === 'DISPUTE_RAISED') return { label: 'Resolve', show: true };
-    }
-    return { label: '', show: false };
-  };
-
   return (
     <div className="inv-root">
       {/* Navbar */}
