@@ -7,13 +7,15 @@ import ShipmentCard from './components/ShipmentCard';
 import ActionsPanel from './components/ActionsPanel';
 import NavigationMenu from './components/NavigationMenu';
 import ApproverScreen from './components/ApproverScreen';
+import InvoiceScreen from './components/InvoiceScreen';
 
 function App() {
   const [selectedShipmentId, setSelectedShipmentId] = useState<string>(shipments[0].id);
   const selectedShipment = shipments.find(s => s.id === selectedShipmentId);
   const [activeMilestone, setActiveMilestone] = useState('ALL');
   const [showMenu, setShowMenu] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<'shipper' | 'approver'>('shipper');
+  const [currentScreen, setCurrentScreen] = useState<'shipper' | 'approver' | 'invoice'>('shipper');
+  const [invoiceDefaultTab, setInvoiceDefaultTab] = useState<'payables' | 'receivables' | 'invoicing'>('payables');
   // Track spot/tender overrides per shipment (set dynamically when user selects in task 1)
   const [spotNormalMap, setSpotNormalMap] = useState<Record<string, 'Spot' | 'Tender'>>({});
 
@@ -21,8 +23,11 @@ function App() {
     setSpotNormalMap(prev => ({ ...prev, [selectedShipmentId]: value }));
   };
 
-  const handleNavigate = (screen: 'shipper' | 'approver') => {
+  const handleNavigate = (screen: 'shipper' | 'approver' | 'invoice', invoiceTab?: 'payables' | 'receivables' | 'invoicing') => {
     setCurrentScreen(screen);
+    if (screen === 'invoice' && invoiceTab) {
+      setInvoiceDefaultTab(invoiceTab);
+    }
     setShowMenu(false);
   };
 
@@ -34,6 +39,16 @@ function App() {
       onNavigate={handleNavigate}
     />
   );
+
+  // Invoice Screen
+  if (currentScreen === 'invoice') {
+    return (
+      <>
+        <InvoiceScreen onOpenMenu={() => setShowMenu(true)} defaultTab={invoiceDefaultTab} />
+        {menuOverlay}
+      </>
+    );
+  }
 
   // Approver Screen
   if (currentScreen === 'approver') {

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 
 interface Props {
   onClose: () => void;
-  currentScreen: 'shipper' | 'approver';
-  onNavigate: (screen: 'shipper' | 'approver') => void;
+  currentScreen: 'shipper' | 'approver' | 'invoice';
+  onNavigate: (screen: 'shipper' | 'approver' | 'invoice', invoiceTab?: 'payables' | 'receivables' | 'invoicing') => void;
 }
 
 const modules = [
@@ -15,7 +15,7 @@ const modules = [
   { name: 'Manage Tasks', desc: 'A workflow execution and compliance tool. Manage shipment tasks such as document uploads, approvals, and operational milestones' },
   { name: 'RFQ', desc: 'Launch long-term or multi-line RFQs. Use for bulk or quarterly/annual rate procurement, not single shipment requests' },
   { name: 'Shipsy BI(Insights)', desc: 'A business intelligence and analytics module. Use this to create and view dashboards, KPIs, and reports across inquiries, bookings, RFQs, shipments, and invoices' },
-  { name: 'Invoice', desc: 'Manage Payables & Receivables: create, compare, approve, dispute, track all your invoices', star: true },
+  { name: 'Invoice', desc: 'Manage Payables & Receivables: create, compare, approve, dispute, track all your invoices' },
   { name: 'Rate Master', desc: 'A storage library for all rates. Use this module to upload and store offline rate sheets or view confirmed bids that are auto-captured into your system', star: true },
 ];
 
@@ -99,14 +99,18 @@ const NavigationMenu: React.FC<Props> = ({ onClose, currentScreen, onNavigate })
           {modules.map(m => (
             <div
               key={m.name}
-              style={{ position: 'relative', paddingBottom: m.name === 'Manage Tasks' ? 8 : 0 }}
+              style={{ position: 'relative', paddingBottom: (m.name === 'Manage Tasks' || m.name === 'Invoice') ? 8 : 0 }}
               onMouseEnter={() => setHoveredModule(m.name)}
               onMouseLeave={() => setHoveredModule(null)}
             >
-              <div style={{
-                fontSize: 14, fontWeight: 700, color: '#111', cursor: 'pointer',
-                marginBottom: 4,
-              }}>
+              <div
+                style={{
+                  fontSize: 14, fontWeight: 700,
+                  color: (m.name === 'Invoice' && currentScreen === 'invoice') ? '#006EC3' : '#111',
+                  cursor: 'pointer',
+                  marginBottom: 4,
+                }}
+              >
                 {m.name}
                 {m.star && <span style={{ color: '#FFB300', marginLeft: 4 }}>&#9733;</span>}
               </div>
@@ -132,6 +136,37 @@ const NavigationMenu: React.FC<Props> = ({ onClose, currentScreen, onNavigate })
                         padding: '10px 16px', fontSize: 12, cursor: 'pointer',
                         color: (opt === 'Shipper' && currentScreen === 'shipper') || (opt === 'Approver' && currentScreen === 'approver') ? '#006EC3' : '#333',
                         fontWeight: (opt === 'Shipper' && currentScreen === 'shipper') || (opt === 'Approver' && currentScreen === 'approver') ? 700 : 400,
+                        background: '#fff',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f5')}
+                      onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Invoice hover submenu */}
+              {m.name === 'Invoice' && hoveredModule === 'Invoice' && (
+                <div style={{
+                  position: 'absolute', top: '100%', left: 0, marginTop: 0,
+                  background: '#fff', border: '1px solid #e0e0e0', borderRadius: 4,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.12)', zIndex: 10,
+                  minWidth: 160, overflow: 'hidden',
+                }}>
+                  {(['Payables', 'Receivables', 'Invoicing'] as const).map(opt => (
+                    <div
+                      key={opt}
+                      onClick={() => {
+                        const tabMap = { Payables: 'payables', Receivables: 'receivables', Invoicing: 'invoicing' } as const;
+                        onNavigate('invoice', tabMap[opt]);
+                        onClose();
+                      }}
+                      style={{
+                        padding: '10px 16px', fontSize: 12, cursor: 'pointer',
+                        color: '#333',
+                        fontWeight: 400,
                         background: '#fff',
                       }}
                       onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f5')}
