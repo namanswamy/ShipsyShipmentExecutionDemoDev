@@ -2018,31 +2018,32 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   INVOICING TAB (Create Invoice - Two Panel Layout)
+   INVOICING TAB (Left List + Right Detail Panel)
    ═══════════════════════════════════════════════════════════════ */
 
 .invoicing-tab-root {
   display: flex;
   gap: 0;
-  margin: 16px 25px 0 25px;
-  min-height: calc(100vh - 120px);
+  margin: 10px 10px 0 10px;
+  height: calc(100vh - 80px);
 }
 
-/* ── Left Panel ── */
+/* ── Left Panel (Shipment List) ── */
 .invoicing-left-panel {
-  flex: 1;
-  min-width: 0;
+  width: 300px;
+  min-width: 300px;
   border: 1px solid #D9D9D9;
-  border-radius: 4px;
+  border-radius: 4px 0 0 4px;
   background: #FFFFFF;
   overflow-y: auto;
-  max-height: calc(100vh - 130px);
+  display: flex;
+  flex-direction: column;
 }
 .invoicing-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
+  padding: 12px 16px;
   border-bottom: 1px solid #E8E8E8;
   background: #FAFAFA;
   position: sticky;
@@ -2050,52 +2051,45 @@
   z-index: 2;
 }
 
-/* ── Shipment Line Item ── */
-.invoicing-shipment-item {
-  border-bottom: 1px solid #E8E8E8;
-}
-.invoicing-shipment-item:last-child {
-  border-bottom: none;
-}
-.invoicing-line-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 20px;
+/* ── Shipment Card (left list) ── */
+.invoicing-ship-card {
+  padding: 12px 16px;
+  border-bottom: 1px solid #F0F0F0;
   cursor: pointer;
   transition: background 150ms ease;
 }
-.invoicing-line-item:hover {
+.invoicing-ship-card:hover {
   background: #F5F8FF;
 }
-.invoicing-shipment-item.expanded .invoicing-line-item {
-  background: #F0F7FF;
-  border-bottom: 1px solid #D6E8F7;
+.invoicing-ship-card.selected {
+  background: #E6F0FF;
+  border-left: 3px solid #006EC3;
+  padding-left: 13px;
 }
-.invoicing-line-left {
+.invoicing-ship-card-top {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  margin-bottom: 6px;
 }
-.invoicing-expand-arrow {
-  font-size: 10px;
-  color: #999;
-  width: 14px;
-  flex-shrink: 0;
-}
-.invoicing-asn {
-  font-size: 15px;
+.invoicing-ship-asn {
+  font-size: 14px;
   font-weight: 700;
   color: #006EC3;
-  margin-bottom: 4px;
 }
-.invoicing-line-meta {
+.invoicing-ship-card-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #555;
+  gap: 6px;
+  margin-bottom: 4px;
 }
+.invoicing-ship-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Shared badge styles */
 .invoicing-mode-badge {
   font-size: 10px;
   font-weight: 700;
@@ -2122,15 +2116,10 @@
   color: #1565C0;
   border: 1px solid #90CAF9;
 }
-.invoicing-line-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
 .invoicing-status-done {
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 3px;
   background: #D3FFEA;
   color: #0F6E3C;
@@ -2138,7 +2127,7 @@
 .invoicing-status-partial {
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 3px;
   background: #FFF3E0;
   color: #E65100;
@@ -2146,17 +2135,32 @@
 .invoicing-status-pending {
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 3px;
   background: #FFF8E1;
   color: #F9A825;
 }
 
-/* ── Expanded Content ── */
-.invoicing-expanded-content {
-  padding: 0 20px 20px 20px;
-  background: #FAFCFF;
-  border-top: none;
+/* ── Right Panel (Detail) ── */
+.invoicing-right-panel-detail {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #D9D9D9;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+}
+.invoicing-detail-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #E8E8E8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #FAFAFA;
 }
 
 /* Invoice fields row */
@@ -2164,9 +2168,8 @@
   display: flex;
   align-items: flex-end;
   gap: 14px;
-  padding: 16px 0;
+  padding: 12px 20px;
   border-bottom: 1px dashed #D0D0D0;
-  margin-bottom: 12px;
 }
 .invoicing-create-btn {
   height: 34px;
@@ -2198,18 +2201,16 @@
   font-size: 12px;
   font-weight: 600;
   color: #006EC3;
-  padding: 8px 12px;
+  padding: 8px 20px;
   background: #E6F7FF;
-  border: 1px solid #BAE7FF;
-  border-radius: 4px;
-  margin-bottom: 12px;
+  border-bottom: 1px solid #BAE7FF;
 }
 
 /* Charge type tabs */
 .invoicing-charge-tabs {
   display: flex;
   border-bottom: 1px solid #E8E8E8;
-  margin-bottom: 0;
+  padding: 0 20px;
 }
 .invoicing-charge-tab {
   padding: 10px 16px;
@@ -2229,107 +2230,52 @@
   opacity: 0.8;
 }
 
+/* Scrollable area for table + created invoices */
+.invoicing-detail-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 20px 20px;
+}
+
 /* Charge table wrapper */
 .invoicing-charge-table-wrap {
   border: 1px solid #E8E8E8;
-  border-top: none;
-  border-radius: 0 0 4px 4px;
+  border-radius: 4px;
   overflow: hidden;
+  margin-top: 12px;
 }
 
-/* ── Right Panel (Invoice Pane) ── */
-.invoicing-right-panel {
-  width: 380px;
-  min-width: 380px;
-  border: 1px solid #D9D9D9;
-  border-left: none;
-  border-radius: 0 4px 4px 0;
-  background: #FFFFFF;
+/* ── Created Invoices section (bottom of right panel) ── */
+.invoicing-created-section {
+  margin-top: 20px;
+  border-top: 2px solid #006EC3;
+  padding-top: 12px;
+}
+.invoicing-created-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
   display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 130px);
-}
-.invoicing-right-header {
-  padding: 14px 20px 10px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  color: '#262626';
-}
-.invoicing-right-header-bar {
-  height: 3px;
-  width: 80px;
-  background: #1890FF;
-  margin-left: 20px;
-  margin-bottom: 0;
-  border-radius: 2px 2px 0 0;
-}
-.invoicing-empty-pane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
-.invoicing-invoice-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-}
-
-/* Invoice entry card */
-.invoicing-invoice-entry {
+.invoicing-created-row {
   border: 1px solid #E8E8E8;
   border-radius: 4px;
-  margin-bottom: 10px;
-  overflow: hidden;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: #FAFAFA;
   transition: box-shadow 150ms ease;
 }
-.invoicing-invoice-entry:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+.invoicing-created-row:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
-.invoicing-invoice-entry-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 12px 14px 8px 14px;
-  background: #FAFAFA;
-  border-bottom: 1px solid #F0F0F0;
-}
-.invoicing-invoice-entry-body {
-  padding: 8px 14px;
-}
-.invoicing-charge-type-tag {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 3px;
-  background: #E8F5E9;
-  color: #2E7D32;
-}
-.invoicing-invoice-entry-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 14px;
-  border-top: 1px solid #F0F0F0;
-  background: #FAFAFA;
-}
-.invoicing-inv-action-link {
-  background: none;
-  border: none;
-  color: #1875F0;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-family: inherit;
-  padding: 2px 4px;
-}
-.invoicing-inv-action-link:hover {
-  text-decoration: underline;
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ═══ PRINT — A4 Invoice ═══ */

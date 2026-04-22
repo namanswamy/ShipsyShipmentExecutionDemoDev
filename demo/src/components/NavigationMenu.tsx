@@ -155,7 +155,7 @@ const NavigationMenu: React.FC<Props> = ({ onClose, currentScreen, onNavigate })
                   boxShadow: '0 4px 12px rgba(0,0,0,0.12)', zIndex: 10,
                   minWidth: 160, overflow: 'hidden',
                 }}>
-                  {(['Payables', 'Receivables', 'Invoicing'] as const).map(opt => (
+                  {(['Invoicing', 'Payables', 'Receivables'] as const).map(opt => (
                     <div
                       key={opt}
                       onClick={() => {
